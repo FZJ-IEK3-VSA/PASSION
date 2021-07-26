@@ -18,3 +18,5 @@ mahotas
 pytest
 netCDF4>=1.5.3
 segmentation-models
+git+https://github.com/FZJ-IEK3-VSA/geokit.git
+git+https://github.com/FZJ-IEK3-VSA/reskit.git#egg=reskit
