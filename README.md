@@ -14,7 +14,7 @@ To set the project up, you need to run in the root folder:
 
 #### Linux:
 ```
-conda create --name passion-test --channel conda-forge python=3.7 "netCDF4>=1.5.3" "gdal>=2.0.0,<3.0.0" xarray matplotlib descartes pandas numpy scipy scikit-learn pathlib pillow tqdm shapely pyshp mahotas pytest
+conda create --name passion-test --channel conda-forge python=3.7 "gdal>=2.0.0,<3.0.0"
 
 source activate passion-test
 pip3 install -r requirements.txt
@@ -25,12 +25,11 @@ pip3 install .
 cd ..
 rm -rf geokit
 pip3 install git+https://github.com/FZJ-IEK3-VSA/reskit.git#egg=reskit
-pip3 install -U segmentation-models
 ```
 
 #### Windows:
 ```
-conda create --name passion-test --channel conda-forge python=3.7 "netCDF4>=1.5.3" "gdal>=2.0.0,<3.0.0" xarray matplotlib descartes pandas numpy scipy scikit-learn pathlib pillow tqdm shapely pyshp mahotas pytest
+conda create --name passion-test --channel conda-forge python=3.7 "gdal>=2.0.0,<3.0.0"
 
 activate passion-test
 pip3 install -r requirements.txt
@@ -41,7 +40,6 @@ pip3 install .
 cd ..
 del /s /q geokit
 pip3 install git+https://github.com/FZJ-IEK3-VSA/reskit.git#egg=reskit
-pip3 install -U segmentation-models
 ```
 
 ## Running the tests
