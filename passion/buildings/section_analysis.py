@@ -107,7 +107,17 @@ def get_tilt(tilt_distribution):
   tilt = tilt_distribution.resample(1)[0][0]
   return tilt
 
+def get_optimal_azimuth(latitude):
+  '''Returns the optimal panel azimuth orientation.
+  180º (south) for positive latitudes and 0º (north) for negative latitudes
+  '''
+  return 180 if latitude > 0 else 0
 
+def get_optimal_tilt(latitude):
+  '''Returns the optimal panel tilt angle for a given latitude.
+  TODO: improve it calculating based on latitude.
+  '''
+  return 31
 
 def process_rooftop(rooftop):
   '''Takes a rooftop and tries to detect the straight ridge line that separates two sections.
@@ -132,8 +142,9 @@ def process_rooftop(rooftop):
   flat_section['rooftop_id'] = r_id
   flat_section['section_id'] = 0
   flat_section['flat'] = 1.0
-  flat_section['azimuth'] = 0
-  flat_section['tilt_angle'] = 0
+  center_latitude = rooftop['center_latlon'][0]
+  flat_section['azimuth'] = get_optimal_azimuth(center_latitude)
+  flat_section['tilt_angle'] = get_optimal_tilt(center_latitude)
   flat_section['outline_xy'] = outline
   flat_section['image'] = image_portion
 

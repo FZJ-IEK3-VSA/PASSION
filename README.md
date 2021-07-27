@@ -18,13 +18,6 @@ conda create --name passion-test --channel conda-forge python=3.7 "gdal>=2.0.0,<
 
 source activate passion-test
 pip3 install -r requirements.txt
-
-git clone https://github.com/FZJ-IEK3-VSA/geokit.git
-cd geokit
-pip3 install .
-cd ..
-rm -rf geokit
-pip3 install git+https://github.com/FZJ-IEK3-VSA/reskit.git#egg=reskit
 ```
 
 #### Windows:
@@ -33,13 +26,6 @@ conda create --name passion-test --channel conda-forge python=3.7 "gdal>=2.0.0,<
 
 activate passion-test
 pip3 install -r requirements.txt
-
-git clone https://github.com/FZJ-IEK3-VSA/geokit.git
-cd geokit
-pip3 install .
-cd ..
-del /s /q geokit
-pip3 install git+https://github.com/FZJ-IEK3-VSA/reskit.git#egg=reskit
 ```
 
 ## Running the tests
