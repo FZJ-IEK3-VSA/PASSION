@@ -18,6 +18,12 @@ conda activate passion
 python setup.py install
 ```
 
+
+For getting the satelite images, please retrieve an API_KEY for bing maps from https://www.bingmapsportal.com/ and set it.
+
+
+The trained model is quite big, therefore it is stored outside of the repository and can be downloaded here: 
+
 ## Running the tests
 
 To execute automated tests, in the root folder run:
