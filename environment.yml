@@ -1,4 +1,4 @@
-name: passion-test
+name: passion
 channels:
   - conda-forge
   - defaults
@@ -230,4 +230,3 @@ dependencies:
     - werkzeug==2.0.1
     - wrapt==1.12.1
     - xarray==0.19.0
-prefix: /storage/internal/home/r-pueblas/.conda/envs/passion-test
