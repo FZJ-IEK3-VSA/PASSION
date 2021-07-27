@@ -3,8 +3,8 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - gdal=2.4.4=py37hf8c3989_1
-  - notebook=6.4.0=pyha770c72_0
+  - gdal=2.4.4
+  - notebook=6.4.0
   - pip:
     - descartes==1.1.0
     - efficientnet==1.0.0
