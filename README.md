@@ -14,7 +14,7 @@ To set the project up, you need to run in the root folder:
 
 ```
 conda env create -f environment.yml
-conda activate passion-test
+conda activate passion
 python setup.py install
 ```
 
