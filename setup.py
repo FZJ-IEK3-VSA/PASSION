@@ -2,6 +2,8 @@ import os, setuptools
 dir_path = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(dir_path, 'README.md'), "r") as fh:
     long_description = fh.read()
+with open( os.path.join(dir_path,'requirements.txt') ) as f:
+    required_packages = f.read().splitlines()
 
 setuptools.setup(
     name='PASSION',
@@ -14,7 +16,7 @@ setuptools.setup(
     url='',
     include_package_data=True,
     packages=setuptools.find_packages(),
-    install_requires=[],
+    install_requires=required_packages,
     setup_requires=['setuptools-git'],
     classifiers=[],
     keywords=['photovoltaic', 'segmentation'],
