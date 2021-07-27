@@ -12,20 +12,10 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 
 To set the project up, you need to run in the root folder:
 
-#### Linux:
 ```
-conda create --name passion-test --channel conda-forge python=3.7 "gdal>=2.0.0,<3.0.0"
-
-source activate passion-test
-pip3 install -r requirements.txt
-```
-
-#### Windows:
-```
-conda create --name passion-test --channel conda-forge python=3.7 "gdal>=2.0.0,<3.0.0"
-
-activate passion-test
-pip3 install -r requirements.txt
+conda env create -f environment.yml
+conda activate passion-test
+python setup.py install
 ```
 
 ## Running the tests
