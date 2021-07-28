@@ -1,5 +1,8 @@
 # PASSION - PhotovoltAic Satellite SegmentatION
 
+![Click here to see the package layers](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/-/blob/master/assets/layers.png)
+
+
 The PASSION python package provides a framework for estimating the rooftop photovoltaic potential of a region
 by analysing its satellite imagery. The library allows all the necessary steps, like obtaining the
 imagery from one of the services (Bing Maps or Google Maps) or training the segmentation model.
@@ -7,7 +10,7 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 
 
 
-![me](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/-/blob/master/assets/full_process.gif)
+![Click here to see the visual pipeline.](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/-/blob/master/assets/full_process.gif)
 
 ## Getting Started
 
