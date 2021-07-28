@@ -8,8 +8,6 @@ import shutil
 import numpy as np
 
 
-TEMP_FILE_PATH = pathlib.Path(os.path.dirname(os.path.realpath(__file__))) / "temp"
-
 def test_image():
   ''''''
   random.seed(101)
@@ -46,25 +44,3 @@ def test_csv():
   shutil.rmtree(tmp_path)
   
   assert dicts == loaded_csv
-
-
-def test_image_retrieval():
-
-  API_KEY = "AhjPfWmuVxVrZGQfVEnguF1rPWTNWfT9lOFx1kb3COXPoAsDNpmK5N3DBUDfQ6cr"
-
-
-  # just define a small example set in order to avoid problems with open street map
-  passion.satellite.image_retrieval.generate_dataset(API_KEY, 'bing', TEMP_FILE_PATH, zoom = 19, 
-    bbox=((50.77850739604879, 6.0768084397936395), (50.77514558009357, 6.081035433169415))
-  )
-
-
-
-
-@pytest.skip(msg="Rate limit of OSM API")
-def test_get_osm_footprint():
-
-
-  passion.segmentation.osm.generate_osm(TEMP_FILE_PATH, TEMP_FILE_PATH)
-
-
