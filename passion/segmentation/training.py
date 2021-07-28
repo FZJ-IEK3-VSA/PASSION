@@ -48,7 +48,11 @@ def train_model(training_data_path: pathlib.Path,
   
   Corresponding images and labels must have the same name.
   Images are 3 channel RGB satellite images and labels are their one channel binary mask.
+
+  Model and model's history are stored in model_path
   '''
+  model_output_path.mkdir(parents=True, exist_ok=True)
+
   model = DEFAULT_MODEL
   optimizer = DEFAULT_OPTIMIZER
   loss = DEFAULT_LOSS
