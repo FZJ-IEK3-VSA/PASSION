@@ -7,7 +7,7 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 
 
 
-![me](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/assets/full_process.gif)
+![me](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/-/blob/master/assets/full_process.gif)
 
 ## Getting Started
 
