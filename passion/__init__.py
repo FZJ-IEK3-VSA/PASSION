@@ -1,4 +1,5 @@
 from . import util
+from . import manager
 from .satellite import *
 from .segmentation import *
 from .buildings import *
