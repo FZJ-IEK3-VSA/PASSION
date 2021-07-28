@@ -27,7 +27,7 @@ def test_get_osm_footprint():
 
 def test_get_segmentation_prediction():
   '''Tests the segmentation output from the model.'''
-  model_path = TEMP_FILE_PATH / '../../slurm/results/model/rooftop_segmentation.h5'
+  model_path = TEMP_FILE_PATH / '../../workspace/results/model/rooftop_segmentation.h5'
   input_path = TEMP_FILE_PATH / 'satellite'
   output_path = TEMP_FILE_PATH / 'segmentation'
 
