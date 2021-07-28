@@ -5,6 +5,10 @@ by analysing its satellite imagery. The library allows all the necessary steps, 
 imagery from one of the services (Bing Maps or Google Maps) or training the segmentation model.
 Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 
+
+
+![me](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/assets/full_process.gif)
+
 ## Getting Started
 
 
@@ -21,7 +25,6 @@ python setup.py install
 
 For getting the satelite images, please retrieve an API_KEY for bing maps from https://www.bingmapsportal.com/ and set it.
 
-
 The trained model is quite big, therefore it is stored outside of the repository and can be downloaded here: 
 
 ## Running the tests
@@ -34,4 +37,4 @@ pytest
 
 ### Examples
 
-A set of examples can be found in the notebooks folder.
+A set of examples for every step can be found in the notebooks folder.  Also, notebooks for generating the training data for the model, and an example of the manager that runs all the pipeline in a single function call.
