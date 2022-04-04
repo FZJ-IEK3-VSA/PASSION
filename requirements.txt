@@ -9,7 +9,6 @@ pandas
 numpy
 scipy
 scikit-learn
-pathlib
 pillow
 tqdm
 shapely
