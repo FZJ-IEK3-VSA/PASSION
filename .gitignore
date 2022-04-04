@@ -1,3 +1,8 @@
 __pycache__/
 .pytest_cache/
 .ipynb_checkpoints
+.eggs/
+PASSION.egg-info/
+build/
+dist/
+test/temp/
