@@ -17,6 +17,9 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 
 ### Prerequisites
 
+Given the model size, this repository requires git LFS. You can install it in your system with the following guide:
+http://arfc.github.io/manual/guides/git-lfs
+
 To set the project up, you need to run in the root folder:
 
 ```
