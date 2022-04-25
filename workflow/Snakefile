@@ -1,0 +1,16 @@
+# how to make it "absolute" if snakemake is run outside 'workflow'?
+configfile: 'workflow/config.yml'
+
+results = config['results_path']
+image_retrieval_output = config['ImageRetrieval']['output_folder']
+
+rule generate_dataset:
+    output:
+        directory(results + "/" + image_retrieval_output)
+    conda:
+        # how to refer to the env, while installing '.'?
+        '../environment.yml'
+    shell:
+        '''
+        python workflow/scripts/generate_dataset.py --config workflow/config.yml
+        '''
