@@ -31,7 +31,7 @@ def analyse_region(
   
   passion.satellite.image_retrieval.generate_dataset(api_key, service, satellite_path, zoom = 19, bbox=bbox, shapefile=shapefile, find_valid_zoom=find_valid_zoom)
   passion.segmentation.prediction.segment_dataset(input_path = satellite_path, model = model, output_path = segmentation_path)
-  passion.buildings.rooftop_analysis.generate_rooftops(segmentation_path, rooftops_path)
+  passion.buildings.rooftop_analysis.generate_rooftops(segmentation_path, rooftops_path, 'rooftops')
   passion.buildings.section_analysis.generate_sections(rooftops_path, output_path, tilt_path)
   
   shutil.rmtree(TEMP_FILE_PATH)

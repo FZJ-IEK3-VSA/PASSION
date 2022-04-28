@@ -33,7 +33,7 @@ passion.segmentation.prediction.segment_dataset(input_path = satellite_output_pa
 ### ROOFTOPS ANALYSIS ###
 rooftop_output_path = RESULTS_PATH / 'rooftops'
 
-passion.buildings.rooftop_analysis.generate_rooftops(segmentation_output_path, rooftop_output_path)
+passion.buildings.rooftop_analysis.generate_rooftops(segmentation_output_path, rooftop_output_path, 'rooftops')
 
 ### SECTIONS ANALYSIS ###
 section_output_path = RESULTS_PATH / 'sections'
