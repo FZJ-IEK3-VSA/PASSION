@@ -41,7 +41,7 @@ def test_get_rooftops():
   input_path = TEMP_FILE_PATH / 'segmentation'
   output_path = TEMP_FILE_PATH / 'rooftops'
 
-  passion.buildings.rooftop_analysis.generate_rooftops(input_path, output_path)
+  passion.buildings.rooftop_analysis.generate_rooftops(input_path, output_path, 'rooftops')
 
   rooftops = passion.util.io.load_csv(output_path, 'rooftops.csv')
   images = list((output_path / 'rooftops').glob('*.png'))

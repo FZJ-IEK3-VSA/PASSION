@@ -8,6 +8,7 @@ import passion.util
 
 def generate_rooftops(predictions_path: pathlib.Path,
                       output_path: pathlib.Path,
+                      file_name: str,
                       minimum_area: int = 25
 ):
   '''Generates a CSV file containing the detected rooftops of the input segmentations.
@@ -87,6 +88,6 @@ def generate_rooftops(predictions_path: pathlib.Path,
 
         rooftops.append(rooftop)
   
-  passion.util.io.save_to_csv(rooftops, output_path, 'rooftops')
+  passion.util.io.save_to_csv(rooftops, output_path, file_name)
 
   return
