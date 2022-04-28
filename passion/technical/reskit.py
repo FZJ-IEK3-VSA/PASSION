@@ -25,6 +25,7 @@ def set_pv_module(module: PVModule):
   return
 
 def generate_technical(sections_path: pathlib.Path,
+                       sections_filename: str,
                        output_path: pathlib.Path,
                        era5_path: pathlib.Path,
                        sarah_path: pathlib.Path
@@ -66,7 +67,7 @@ def generate_technical(sections_path: pathlib.Path,
                       'flat', 'outline_latlon', 'outline_xy', 'original_image_name',
                       'section_image_name', 'n_panels', 'modules_cost'])
 
-  sections = passion.util.io.load_csv(sections_path, 'sections.csv')
+  sections = passion.util.io.load_csv(sections_path, sections_filename + '.csv')
   for i, section in enumerate(sections):
     
     n_panels = section['area'] // DEFAULT_PVMODULE.area
