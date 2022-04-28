@@ -3,14 +3,26 @@ configfile: 'workflow/config.yml'
 
 results = config['results_path']
 image_retrieval_output = config['ImageRetrieval']['output_folder']
+segmentation_output = config['ImageSegmentation']['output_folder']
 
 rule generate_dataset:
     output:
         directory(results + "/" + image_retrieval_output)
     conda:
-        # how to refer to the env, while installing '.'?
         '../environment.yml'
     shell:
         '''
         python workflow/scripts/generate_dataset.py --config workflow/config.yml
+        '''
+
+rule segment_dataset:
+    input:
+        directory(results + "/" + image_retrieval_output)
+    output:
+        directory(results + "/" + segmentation_output)    
+    conda:
+        '../environment.yml'
+    shell:
+        '''
+        python workflow/scripts/segment_dataset.py --config workflow/config.yml
         '''
