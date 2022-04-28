@@ -8,5 +8,6 @@ dist/
 test/temp/
 .snakemake
 gurobi.log
+config.yml
 results
 output
