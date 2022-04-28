@@ -54,7 +54,7 @@ def test_get_sections():
   input_path = TEMP_FILE_PATH / 'rooftops'
   output_path = TEMP_FILE_PATH / 'sections'
 
-  passion.buildings.section_analysis.generate_sections(input_path, output_path, tilt_path)
+  passion.buildings.section_analysis.generate_sections(input_path, 'rooftops', output_path, 'sections', tilt_path)
 
   sections = passion.util.io.load_csv(output_path, 'sections.csv')
   images = list((output_path / 'sections').glob('*.png'))

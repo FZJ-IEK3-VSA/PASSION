@@ -19,7 +19,9 @@ def set_superstructure_factor(factor: float):
   return
 
 def generate_sections(rooftops_path: pathlib.Path,
+                      rooftops_filename: str,
                       output_path: pathlib.Path,
+                      output_filename: str,
                       tilt_distribution_path: pathlib.Path
 ):
   '''Generates a CSV file containing the detected sections of the input rooftops.
@@ -60,7 +62,7 @@ def generate_sections(rooftops_path: pathlib.Path,
 
   tilt_distribution = passion.util.io.load_pickle(tilt_distribution_path)
 
-  rooftops = passion.util.io.load_csv(rooftops_path, 'rooftops.csv')
+  rooftops = passion.util.io.load_csv(rooftops_path, rooftops_filename + '.csv')
 
   sections = []
 
@@ -99,7 +101,7 @@ def generate_sections(rooftops_path: pathlib.Path,
       passion.util.io.save_image(section['image'], img_output_path, section['section_image_name'])
       section.pop('image', None)
 
-  passion.util.io.save_to_csv(sections, output_path, 'sections')
+  passion.util.io.save_to_csv(sections, output_path, output_filename)
   return
 
 def get_tilt(tilt_distribution):
