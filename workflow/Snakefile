@@ -1,9 +1,14 @@
-# how to make it "absolute" if snakemake is run outside 'workflow'?
 configfile: 'workflow/config.yml'
 
 results = config['results_path']
 image_retrieval_output = config['ImageRetrieval']['output_folder']
 segmentation_output = config['ImageSegmentation']['output_folder']
+rooftops_folder = config['RooftopAnalysis']['output_folder']
+rooftops_output = rooftops_folder + '/' + config['RooftopAnalysis']['file_name']
+
+rule all:
+    input:
+        results + "/" + rooftops_output + '.csv'
 
 checkpoint generate_dataset:
     output:
@@ -21,15 +26,33 @@ def aggregate_input(wildcards):
     return expand(results + "/" + image_retrieval_output + "/{i}.png",
                   i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
 
-rule segment_dataset:
+
+# input function for rule aggregate, return paths to all files produced by the checkpoint 'somestep'
+def aggregate_segment_input(wildcards):
+    checkpoint_output = checkpoints.segment_dataset.get(**wildcards).output[0]
+    return expand(results + "/" + segmentation_output + "/{i}.png",
+                  i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
+
+checkpoint segment_dataset:
     input:
-        #results + "/" + image_retrieval_output + "/{location}.png"
         aggregate_input
     output:
-        directory(results + "/" + segmentation_output)    
+        directory(results + "/" + segmentation_output)
     conda:
         '../environment.yml'
     shell:
         '''
         python workflow/scripts/segment_dataset.py --config workflow/config.yml
+        '''
+
+rule analyze_buildings:
+    input:
+        aggregate_segment_input
+    output:
+        results + "/" + rooftops_output + '.csv'
+    conda:
+        '../environment.yml'
+    shell:
+        '''
+        python workflow/scripts/analyze_rooftops.py --config workflow/config.yml
         '''
