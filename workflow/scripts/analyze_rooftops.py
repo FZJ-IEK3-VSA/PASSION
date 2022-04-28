@@ -26,4 +26,6 @@ output_path = results_path / output_folder
 
 output_name = rooftop_config['file_name']
 
-passion.buildings.rooftop_analysis.generate_rooftops(input_path, output_path, output_name)
+minimum_area = int(rooftop_config.get('minimum_area'))
+
+passion.buildings.rooftop_analysis.generate_rooftops(input_path, output_path, output_name, minimum_area)
