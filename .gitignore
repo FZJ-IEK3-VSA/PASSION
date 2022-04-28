@@ -10,3 +10,4 @@ test/temp/
 gurobi.log
 config.yml
 results
+output

@@ -1,7 +1,7 @@
 import passion
 import argparse, pathlib, yaml, pathlib, shapefile
 
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser()
 parser.add_argument('--config', metavar='C', type=str, help='Config file path')
 args = vars(parser.parse_args())
 configfile = args['config']
