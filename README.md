@@ -28,9 +28,12 @@ conda activate passion
 ```
 
 
-For getting the satelite images, please retrieve an API_KEY for bing maps from https://www.bingmapsportal.com/ and set it.
+For getting the satelite images, please retrieve an API_KEY for bing maps from https://www.bingmapsportal.com/ and set it in the snakemake config file.
 
-The trained model is quite big, therefore it is stored outside of the repository and can be downloaded here: 
+The key should be specified at workflow/config.yml as:
+```
+api_key: '<API_KEY>'
+```
 
 ## Running the tests
 
