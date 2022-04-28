@@ -5,7 +5,7 @@ results = config['results_path']
 image_retrieval_output = config['ImageRetrieval']['output_folder']
 segmentation_output = config['ImageSegmentation']['output_folder']
 
-rule generate_dataset:
+checkpoint generate_dataset:
     output:
         directory(results + "/" + image_retrieval_output)
     conda:
@@ -15,9 +15,16 @@ rule generate_dataset:
         python workflow/scripts/generate_dataset.py --config workflow/config.yml
         '''
 
+# input function for rule aggregate, return paths to all files produced by the checkpoint 'somestep'
+def aggregate_input(wildcards):
+    checkpoint_output = checkpoints.generate_dataset.get(**wildcards).output[0]
+    return expand(results + "/" + image_retrieval_output + "/{i}.png",
+                  i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
+
 rule segment_dataset:
     input:
-        directory(results + "/" + image_retrieval_output)
+        #results + "/" + image_retrieval_output + "/{location}.png"
+        aggregate_input
     output:
         directory(results + "/" + segmentation_output)    
     conda:
