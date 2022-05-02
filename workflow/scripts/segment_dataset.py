@@ -25,9 +25,17 @@ input_path = results_path / input_folder
 output_folder = segmentation_config['output_folder']
 output_path = results_path / output_folder
 
-model_rel_path = segmentation_config['model_rel_path']
-model_path = results_path / model_rel_path
+is_osm = segmentation_config.get('osm')
 
-model = tf.keras.models.load_model(str(model_path))
+if is_osm:
+    passion.segmentation.osm.generate_osm(input_path = input_path,
+                    output_path = output_path,
+                    save_masks = True,
+                    save_filtered = True)
+else:
+    model_rel_path = segmentation_config['model_rel_path']
+    model_path = results_path / model_rel_path
 
-passion.segmentation.prediction.segment_dataset(input_path = input_path, model = model, output_path = output_path)
+    model = tf.keras.models.load_model(str(model_path))
+
+    passion.segmentation.prediction.segment_dataset(input_path = input_path, model = model, output_path = output_path)
