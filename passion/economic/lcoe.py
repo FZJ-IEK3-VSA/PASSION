@@ -40,8 +40,10 @@ def generate_economic(input_path: pathlib.Path, input_filename: str,
 
   ---
   
-  input_path   -- Path, folder in which the technical potential analysis is stored.
-  output_path     -- Path, folder in which the economic potential analysis will be stored.
+  input_path       -- Path, folder in which the technical potential analysis is stored.
+  input_filename   -- str, name for the technical analysis output.
+  output_path      -- Path, folder in which the economic potential analysis will be stored.
+  output_filename  -- str, name for the economic analysis output.
   '''
   output_path.mkdir(parents=True, exist_ok=True)
   sections = passion.util.io.load_csv(input_path, input_filename + '.csv')
