@@ -27,3 +27,9 @@ SectionAnalysis:
   output_folder: 'sections'
   file_name: 'sections'
   tilt_rel_path: 'tilt_distribution.pkl'
+  
+TechnicalAnalysis:
+  output_folder: 'technical'
+  file_name: 'technical'
+  era5_path: '/storage/internal/data/gears/weather/ERA5/processed/4/8/5/2016'
+  sarah_path: '/storage/internal/data/gears/weather/SARAH/processed/4/8/5/2016'
