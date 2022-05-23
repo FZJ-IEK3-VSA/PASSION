@@ -2,7 +2,7 @@
 results_path: workflow/output
 
 ImageRetrieval:
-  api_key: 'Ajw5tKMynzRmVO14JKzr12Zqp1wNb96-2GClyxQKF3tQPW8a-9BYn4-Tp_-kXQYK'
+  api_key: ''
   service: bing
   zoom: 19
   output_folder: satellite
