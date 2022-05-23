@@ -7,10 +7,12 @@ rooftops_folder = config['RooftopAnalysis']['output_folder']
 rooftops_output = rooftops_folder + '/' + config['RooftopAnalysis']['file_name']
 sections_folder = config['SectionAnalysis']['output_folder']
 sections_output = sections_folder + '/' + config['SectionAnalysis']['file_name']
+technical_folder = config['TechnicalAnalysis']['output_folder']
+technical_output = technical_folder + '/' + config['TechnicalAnalysis']['file_name']
 
 rule all:
     input:
-        results + "/" + sections_output + '.csv'
+        results + "/" + technical_output + '.csv'
 
 checkpoint generate_dataset:
     output:
@@ -69,4 +71,16 @@ rule analyze_sections:
     shell:
         '''
         python workflow/scripts/analyze_sections.py --config workflow/config.yml
+        '''
+                
+rule analyze_technical:
+    input:
+        results + "/" + sections_output + '.csv'
+    output:
+        results + "/" + technical_output + '.csv'
+    conda:
+        '../environment.yml'
+    shell:
+        '''
+        python workflow/scripts/analyze_technical.py --config workflow/config.yml
         '''
