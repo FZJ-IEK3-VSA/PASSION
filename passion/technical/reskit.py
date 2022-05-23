@@ -24,8 +24,8 @@ def set_pv_module(module: PVModule):
   DEFAULT_PVMODULE = module
   return
 
-def generate_technical(sections_path: pathlib.Path,
-                       sections_filename: str,
+def generate_technical(input_path: pathlib.Path,
+                       input_filename: str,
                        output_path: pathlib.Path,
                        output_filename: str,
                        era5_path: pathlib.Path,
@@ -46,7 +46,7 @@ def generate_technical(sections_path: pathlib.Path,
     -outline_xy: list of tuples indicating the section outline relative to the original image.
     -outline_latlon: list of tuples indicating the section outline in latitude and longitude.
     -original_image_name: name of the image from which the rooftop was extracted.
-    -section_image_name: name of the generated image of the section in the 'sections' folder.
+    -section_image_name: name of the generated image of the section in the 'img' folder.
     -modules_cost: total estimated cost of the system PV modules.
   
   Solar simulation is carried out with RESKit. This requires two datasets:
@@ -56,10 +56,12 @@ def generate_technical(sections_path: pathlib.Path,
 
   ---
   
-  sections_path   -- Path, folder in which the sections analysis is stored.
-  output_path     -- Path, folder in which the technical potential analysis will be stored.
-  era5_path       -- Path, folder in which the ERA5 dataset is stored.
-  sarah_path      -- Path, folder in which the SARAH dataset is stored.
+  input_path         -- Path, folder in which the sections analysis is stored.
+  input_filename     -- str, name for the sections analysis file.
+  output_path        -- Path, folder in which the technical potential analysis will be stored.
+  output_filename    -- str, name for the technical analysis output.
+  era5_path          -- Path, folder in which the ERA5 dataset is stored.
+  sarah_path         -- Path, folder in which the SARAH dataset is stored.
   '''
   output_path.mkdir(parents=True, exist_ok=True)
 
@@ -68,7 +70,7 @@ def generate_technical(sections_path: pathlib.Path,
                       'flat', 'outline_latlon', 'outline_xy', 'original_image_name',
                       'section_image_name', 'n_panels', 'modules_cost'])
 
-  sections = passion.util.io.load_csv(sections_path, sections_filename + '.csv')
+  sections = passion.util.io.load_csv(input_path, input_filename + '.csv')
   for i, section in enumerate(sections):
     
     n_panels = section['area'] // DEFAULT_PVMODULE.area
