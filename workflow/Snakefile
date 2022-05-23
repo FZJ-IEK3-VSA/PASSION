@@ -9,10 +9,12 @@ sections_folder = config['SectionAnalysis']['output_folder']
 sections_output = sections_folder + '/' + config['SectionAnalysis']['file_name']
 technical_folder = config['TechnicalAnalysis']['output_folder']
 technical_output = technical_folder + '/' + config['TechnicalAnalysis']['file_name']
+economic_folder = config['EconomicAnalysis']['output_folder']
+economic_output = economic_folder + '/' + config['EconomicAnalysis']['file_name']
 
 rule all:
     input:
-        results + "/" + technical_output + '.csv'
+        results + "/" + economic_output + '.csv'
 
 checkpoint generate_dataset:
     output:
@@ -83,4 +85,16 @@ rule analyze_technical:
     shell:
         '''
         python workflow/scripts/analyze_technical.py --config workflow/config.yml
+        '''
+                
+rule analyze_economic:
+    input:
+        results + "/" + technical_output + '.csv'
+    output:
+        results + "/" + economic_output + '.csv'
+    conda:
+        '../environment.yml'
+    shell:
+        '''
+        python workflow/scripts/analyze_economic.py --config workflow/config.yml
         '''

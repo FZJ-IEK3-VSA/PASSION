@@ -2,7 +2,7 @@
 results_path: workflow/output
 
 ImageRetrieval:
-  api_key: ''
+  api_key: 'Ajw5tKMynzRmVO14JKzr12Zqp1wNb96-2GClyxQKF3tQPW8a-9BYn4-Tp_-kXQYK'
   service: bing
   zoom: 19
   output_folder: satellite
@@ -33,3 +33,7 @@ TechnicalAnalysis:
   file_name: 'technical'
   era5_path: '/storage/internal/data/gears/weather/ERA5/processed/4/8/5/2016'
   sarah_path: '/storage/internal/data/gears/weather/SARAH/processed/4/8/5/2016'
+  
+EconomicAnalysis:
+  output_folder: 'economic'
+  file_name: 'lcoe'
