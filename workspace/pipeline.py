@@ -47,7 +47,7 @@ section_output_path = RESULTS_PATH / 'technical'
 era5_path = r'/storage/internal/data/gears/weather/ERA5/processed/4/8/5/2014'
 sarah_path = r'/storage/internal/data/gears/weather/SARAH/processed/4/8/5/2014'
 
-passion.technical.reskit.generate_technical(section_output_path, 'sections', technical_output_path, era5_path, sarah_path)
+passion.technical.reskit.generate_technical(section_output_path, 'sections', technical_output_path, 'technical', era5_path, sarah_path)
 
 ### ECONOMIC POTENTIAL ###
 section_output_path = RESULTS_PATH / 'economic'
