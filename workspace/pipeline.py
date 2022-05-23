@@ -52,4 +52,4 @@ passion.technical.reskit.generate_technical(section_output_path, 'sections', tec
 ### ECONOMIC POTENTIAL ###
 section_output_path = RESULTS_PATH / 'economic'
 
-passion.economic.lcoe.generate_economic(technical_output_path, economic_output_path)
+passion.economic.lcoe.generate_economic(technical_output_path, 'technical', economic_output_path, 'lcoe')
