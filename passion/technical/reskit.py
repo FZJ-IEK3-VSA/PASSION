@@ -27,6 +27,7 @@ def set_pv_module(module: PVModule):
 def generate_technical(sections_path: pathlib.Path,
                        sections_filename: str,
                        output_path: pathlib.Path,
+                       output_filename: str,
                        era5_path: pathlib.Path,
                        sarah_path: pathlib.Path
 ):
@@ -134,6 +135,6 @@ def generate_technical(sections_path: pathlib.Path,
 
     sections.append(section)
 
-  passion.util.io.save_to_csv(sections, output_path, 'technical')
+  passion.util.io.save_to_csv(sections, output_path, output_filename)
 
   return
