@@ -37,3 +37,12 @@ TechnicalAnalysis:
 EconomicAnalysis:
   output_folder: 'economic'
   file_name: 'lcoe'
+
+SegmentationTraining:
+  dataset_folder: '/storage/internal/data/r-pueblas/aachen_model/'
+  output_folder: 'model'
+  file_name: 'rooftop-segmentation'
+  batch_size: 1
+  n_epochs: 10
+  steps_per_epoch: 75
+  val_steps: 25

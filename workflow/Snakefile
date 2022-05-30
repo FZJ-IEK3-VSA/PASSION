@@ -12,6 +12,9 @@ technical_output = technical_folder + '/' + config['TechnicalAnalysis']['file_na
 economic_folder = config['EconomicAnalysis']['output_folder']
 economic_output = economic_folder + '/' + config['EconomicAnalysis']['file_name']
 
+segmentation_dataset_folder = config['SegmentationTraining']['dataset_folder']
+segmentation_model_folder = config['SegmentationTraining']['output_folder']
+segmentation_model_output = segmentation_model_folder + '/' + config['SegmentationTraining']['file_name']
 rule all:
     input:
         results + "/" + economic_output + '.csv'
@@ -97,4 +100,16 @@ rule analyze_economic:
     shell:
         '''
         python workflow/scripts/analyze_economic.py --config workflow/config.yml
+        '''
+
+rule segmentation_training:
+    input:
+        expand(segmentation_dataset_folder)
+    output:
+        results + '/' + segmentation_model_output + '.h5'
+    conda:
+        '../environment.yml'
+    shell:
+        '''
+        python workflow/scripts/train_segmentation.py --config workflow/config.yml
         '''
