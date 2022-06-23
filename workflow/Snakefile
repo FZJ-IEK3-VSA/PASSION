@@ -23,7 +23,7 @@ checkpoint generate_dataset:
     output:
         directory(results + "/" + image_retrieval_output)
     conda:
-        '../environment.yml'
+        '../requirements.yml'
     shell:
         '''
         python workflow/scripts/generate_dataset.py --config workflow/config.yml
@@ -48,7 +48,7 @@ checkpoint segment_dataset:
     output:
         directory(results + "/" + segmentation_output)
     conda:
-        '../environment.yml'
+        '../requirements.yml'
     shell:
         '''
         python workflow/scripts/segment_dataset.py --config workflow/config.yml
@@ -60,7 +60,7 @@ rule analyze_rooftops:
     output:
         results + "/" + rooftops_output + '.csv'
     conda:
-        '../environment.yml'
+        '../requirements.yml'
     shell:
         '''
         python workflow/scripts/analyze_rooftops.py --config workflow/config.yml
@@ -72,7 +72,7 @@ rule analyze_sections:
     output:
         results + "/" + sections_output + '.csv'
     conda:
-        '../environment.yml'
+        '../requirements.yml'
     shell:
         '''
         python workflow/scripts/analyze_sections.py --config workflow/config.yml
@@ -84,7 +84,7 @@ rule analyze_technical:
     output:
         results + "/" + technical_output + '.csv'
     conda:
-        '../environment.yml'
+        '../requirements.yml'
     shell:
         '''
         python workflow/scripts/analyze_technical.py --config workflow/config.yml
@@ -96,7 +96,7 @@ rule analyze_economic:
     output:
         results + "/" + economic_output + '.csv'
     conda:
-        '../environment.yml'
+        '../requirements.yml'
     shell:
         '''
         python workflow/scripts/analyze_economic.py --config workflow/config.yml
@@ -108,7 +108,7 @@ rule segmentation_training:
     output:
         results + '/' + segmentation_model_output + '.h5'
     conda:
-        '../environment.yml'
+        '../requirements.yml'
     shell:
         '''
         python workflow/scripts/train_segmentation.py --config workflow/config.yml
