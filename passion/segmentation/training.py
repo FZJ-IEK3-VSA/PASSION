@@ -94,7 +94,7 @@ def get_next_batch(batch_size, path):
       #print('\nProcessing label: ',y_path)
       
       X = cv2.imread(str(X_path))
-      y = cv2.imread(str(y_path), cv2.COLOR_BGR2GRAY)
+      y = cv2.imread(str(y_path), cv2.IMREAD_GRAYSCALE)
 
       y = y // 255
 
