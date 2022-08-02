@@ -12,3 +12,4 @@ config.yml
 results
 output
 logs/
+*.out
