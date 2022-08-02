@@ -11,3 +11,4 @@ gurobi.log
 config.yml
 results
 output
+logs/
