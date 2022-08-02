@@ -6,3 +6,10 @@ PASSION.egg-info/
 build/
 dist/
 test/temp/
+.snakemake
+gurobi.log
+config.yml
+results
+output
+logs/
+*.out

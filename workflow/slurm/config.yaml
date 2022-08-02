@@ -1,0 +1,25 @@
+cluster: mkdir -p logs/{rule} &&
+  sbatch
+  --partition={resources.partition}
+  --cpus-per-task={resources.threads}
+  --mem={resources.mem_mb}
+  --job-name=smk-{rule}-{wildcards}
+  --output=logs/{rule}/{rule}-{wildcards}-%j.out
+  --exclude={resources.exclude}
+  --parsable
+default-resources:
+  - partition=normal
+  - mem_mb=10000
+  - threads=4
+  - exclude=cn44,cn45,cn46,cn47,cn48,cn49,cn50,cn51,cn52,cn53,cn54
+restart-times: 0
+max-jobs-per-second: 5
+max-status-checks-per-second: 1
+local-cores: 1
+latency-wait: 100
+jobs: 20
+keep-going: True
+rerun-incomplete: False
+printshellcmds: True
+scheduler: greedy
+use-conda: False
