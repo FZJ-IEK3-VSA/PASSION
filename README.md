@@ -47,6 +47,11 @@ Or, if you want to access the GUI and select which steps to run:
 snakemake --gui
 ```
 
+In order to run passion in a SLURM environment, run:
+```
+snakemake --profile workflow/slurm
+```
+
 ## Running the tests
 
 To execute automated tests, in the root folder run:
