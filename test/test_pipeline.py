@@ -27,7 +27,7 @@ def test_get_osm_footprint():
 
 def test_get_segmentation_prediction():
   '''Tests the segmentation output from the model.'''
-  model_path = TEMP_FILE_PATH / '../../workspace/results/model/rooftop_segmentation.h5'
+  model_path = TEMP_FILE_PATH / '../../workflow/output/model/rooftop_segmentation.h5'
   input_path = TEMP_FILE_PATH / 'satellite'
   output_path = TEMP_FILE_PATH / 'segmentation'
 
@@ -41,10 +41,10 @@ def test_get_rooftops():
   input_path = TEMP_FILE_PATH / 'segmentation'
   output_path = TEMP_FILE_PATH / 'rooftops'
 
-  passion.buildings.rooftop_analysis.generate_rooftops(input_path, output_path)
+  passion.buildings.rooftop_analysis.generate_rooftops(input_path, output_path, 'rooftops')
 
   rooftops = passion.util.io.load_csv(output_path, 'rooftops.csv')
-  images = list((output_path / 'rooftops').glob('*.png'))
+  images = list((output_path / 'img').glob('*.png'))
   
   assert len(rooftops) == len(images)
 
@@ -54,10 +54,10 @@ def test_get_sections():
   input_path = TEMP_FILE_PATH / 'rooftops'
   output_path = TEMP_FILE_PATH / 'sections'
 
-  passion.buildings.section_analysis.generate_sections(input_path, output_path, tilt_path)
+  passion.buildings.section_analysis.generate_sections(input_path, 'rooftops', output_path, 'sections', tilt_path)
 
   sections = passion.util.io.load_csv(output_path, 'sections.csv')
-  images = list((output_path / 'sections').glob('*.png'))
+  images = list((output_path / 'img').glob('*.png'))
   
   assert len(sections) == len(images)
 

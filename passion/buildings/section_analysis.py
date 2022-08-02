@@ -18,12 +18,14 @@ def set_superstructure_factor(factor: float):
   SUPERSTRUCTURE_FACTOR = factor
   return
 
-def generate_sections(rooftops_path: pathlib.Path,
+def generate_sections(input_path: pathlib.Path,
+                      input_filename: str,
                       output_path: pathlib.Path,
+                      output_filename: str,
                       tilt_distribution_path: pathlib.Path
 ):
   '''Generates a CSV file containing the detected sections of the input rooftops.
-  It will also generate a 'sections' folder containing the filtered image of each
+  It will also generate an 'img' folder containing the filtered image of each
   section, with the same naming convention as the previous images with the
   latitude and longitude values of the center of the section.
 
@@ -40,7 +42,7 @@ def generate_sections(rooftops_path: pathlib.Path,
     -center_lon: float longitude value of the section center.
     -area: estimated area of the section in square meters.
     -original_image_name: name of the image from which the rooftop was extracted.
-    -section_image_name: name of the generated image of the section in the 'sections' folder.
+    -section_image_name: name of the generated image of the section in the 'img' folder.
 
   The methodology to detect tilted rooftops is specified in process_rooftop().
 
@@ -50,23 +52,25 @@ def generate_sections(rooftops_path: pathlib.Path,
 
   ---
   
-  rooftops_path           -- Path, folder in which the rooftop analysis is stored.
+  input_path              -- Path, folder in which the rooftop analysis is stored.
+  input_filename          -- str, name for the rooftops analysis file.
   output_path             -- Path, folder in which section analysis will be stored.
+  output_filename         -- str, name for the sections analysis file.
   tilt_distribution_path  -- Path, folder in which the tilt distribution is stored.
   '''
   output_path.mkdir(parents=True, exist_ok=True)
-  img_output_path = output_path / 'sections'
+  img_output_path = output_path / 'img'
   img_output_path.mkdir(parents=True, exist_ok=True)
 
   tilt_distribution = passion.util.io.load_pickle(tilt_distribution_path)
 
-  rooftops = passion.util.io.load_csv(rooftops_path, 'rooftops.csv')
+  rooftops = passion.util.io.load_csv(input_path, input_filename + '.csv')
 
   sections = []
 
   for rooftop in tqdm.tqdm(rooftops):
     tilt_angle = get_tilt(tilt_distribution)
-    img_path = rooftops_path / 'rooftops' / rooftop['rooftop_image_name']
+    img_path = input_path / 'img' / rooftop['rooftop_image_name']
     filename = img_path.stem
     rooftop_image = passion.util.io.load_image(img_path)
     img_shape = rooftop_image.shape[:2]
@@ -99,7 +103,7 @@ def generate_sections(rooftops_path: pathlib.Path,
       passion.util.io.save_image(section['image'], img_output_path, section['section_image_name'])
       section.pop('image', None)
 
-  passion.util.io.save_to_csv(sections, output_path, 'sections')
+  passion.util.io.save_to_csv(sections, output_path, output_filename)
   return
 
 def get_tilt(tilt_distribution):

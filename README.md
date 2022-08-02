@@ -23,14 +23,29 @@ http://arfc.github.io/manual/guides/git-lfs
 To set the project up, you need to run in the root folder:
 
 ```
-conda env create -f environment.yml
+conda env create -f requirements.yml
 conda activate passion
 ```
 
 
-For getting the satelite images, please retrieve an API_KEY for bing maps from https://www.bingmapsportal.com/ and set it.
+For getting the satelite images, please retrieve an API_KEY for bing maps from https://www.bingmapsportal.com/ and set it in the snakemake config file.
 
-The trained model is quite big, therefore it is stored outside of the repository and can be downloaded here: 
+The key should be specified at workflow/config.yml as:
+```
+api_key: '<API_KEY>'
+```
+
+To run the pipeline with the sample configuration, you can choose to run:
+
+```
+snakemake --cores 1
+```
+
+Or, if you want to access the GUI and select which steps to run:
+
+```
+snakemake --gui
+```
 
 ## Running the tests
 
@@ -42,4 +57,4 @@ pytest
 
 ### Examples
 
-A set of examples for every step can be found in the notebooks folder.  Also, notebooks for generating the training data for the model, and an example of the manager that runs all the pipeline in a single function call.
+A set of examples for every step can be found in the notebooks folder.  Also, notebooks for generating the training data for the model, and a notebook that uses the final economic CSV file.

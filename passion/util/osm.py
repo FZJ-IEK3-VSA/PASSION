@@ -2,6 +2,8 @@ import requests
 import json
 import time
 
+import passion.util
+
 OVERPASS_URL = "http://overpass-api.de/api/interpreter"
 
 def get_footprints_latlon(bbox: tuple):
@@ -111,7 +113,7 @@ def get_nearest_osm_building(outline_lonlat: list, latlon: tuple):
     for node in node_map[ident]:
       b.append((node['lat'], node['lon']))
     
-    if ShapefileHandler.polygons_intersect(outline_lonlat, b):
+    if passion.util.gis.polygons_intersect(outline_lonlat, b):
       intersecting_buildings.append(way)
     
     x, y = Polygon(b).centroid.coords.xy

@@ -1,0 +1,115 @@
+configfile: 'workflow/config.yml'
+
+results = config['results_path']
+image_retrieval_output = config['ImageRetrieval']['output_folder']
+segmentation_output = config['ImageSegmentation']['output_folder']
+rooftops_folder = config['RooftopAnalysis']['output_folder']
+rooftops_output = rooftops_folder + '/' + config['RooftopAnalysis']['file_name']
+sections_folder = config['SectionAnalysis']['output_folder']
+sections_output = sections_folder + '/' + config['SectionAnalysis']['file_name']
+technical_folder = config['TechnicalAnalysis']['output_folder']
+technical_output = technical_folder + '/' + config['TechnicalAnalysis']['file_name']
+economic_folder = config['EconomicAnalysis']['output_folder']
+economic_output = economic_folder + '/' + config['EconomicAnalysis']['file_name']
+
+segmentation_dataset_folder = config['SegmentationTraining']['dataset_folder']
+segmentation_model_folder = config['SegmentationTraining']['output_folder']
+segmentation_model_output = segmentation_model_folder + '/' + config['SegmentationTraining']['file_name']
+rule all:
+    input:
+        results + "/" + economic_output + '.csv'
+
+checkpoint generate_dataset:
+    output:
+        directory(results + "/" + image_retrieval_output)
+    conda:
+        '../requirements.yml'
+    shell:
+        '''
+        python workflow/scripts/generate_dataset.py --config workflow/config.yml
+        '''
+
+# input function for rule aggregate, return paths to all files produced by the checkpoint 'somestep'
+def aggregate_input(wildcards):
+    checkpoint_output = checkpoints.generate_dataset.get(**wildcards).output[0]
+    return expand(results + "/" + image_retrieval_output + "/{i}.png",
+                  i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
+
+
+# input function for rule aggregate, return paths to all files produced by the checkpoint 'somestep'
+def aggregate_segment_input(wildcards):
+    checkpoint_output = checkpoints.segment_dataset.get(**wildcards).output[0]
+    return expand(results + "/" + segmentation_output + "/{i}.png",
+                  i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
+
+checkpoint segment_dataset:
+    input:
+        aggregate_input
+    output:
+        directory(results + "/" + segmentation_output)
+    conda:
+        '../requirements.yml'
+    shell:
+        '''
+        python workflow/scripts/segment_dataset.py --config workflow/config.yml
+        '''
+
+rule analyze_rooftops:
+    input:
+        aggregate_segment_input
+    output:
+        results + "/" + rooftops_output + '.csv'
+    conda:
+        '../requirements.yml'
+    shell:
+        '''
+        python workflow/scripts/analyze_rooftops.py --config workflow/config.yml
+        '''
+
+rule analyze_sections:
+    input:
+        results + "/" + rooftops_output + '.csv'
+    output:
+        results + "/" + sections_output + '.csv'
+    conda:
+        '../requirements.yml'
+    shell:
+        '''
+        python workflow/scripts/analyze_sections.py --config workflow/config.yml
+        '''
+                
+rule analyze_technical:
+    input:
+        results + "/" + sections_output + '.csv'
+    output:
+        results + "/" + technical_output + '.csv'
+    conda:
+        '../requirements.yml'
+    shell:
+        '''
+        python workflow/scripts/analyze_technical.py --config workflow/config.yml
+        '''
+                
+rule analyze_economic:
+    input:
+        results + "/" + technical_output + '.csv'
+    output:
+        results + "/" + economic_output + '.csv'
+    conda:
+        '../requirements.yml'
+    shell:
+        '''
+        python workflow/scripts/analyze_economic.py --config workflow/config.yml
+        '''
+
+rule segmentation_training:
+    input:
+        expand(segmentation_dataset_folder)
+    output:
+        results + '/' + segmentation_model_output + '.h5'
+    conda:
+        '../requirements.yml'
+    shell:
+        '''
+        python workflow/scripts/train_segmentation.py --config workflow/config.yml
+        '''

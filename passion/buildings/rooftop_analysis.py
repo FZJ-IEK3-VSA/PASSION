@@ -8,10 +8,11 @@ import passion.util
 
 def generate_rooftops(predictions_path: pathlib.Path,
                       output_path: pathlib.Path,
+                      output_filename: str,
                       minimum_area: int = 25
 ):
   '''Generates a CSV file containing the detected rooftops of the input segmentations.
-  It will also generate a 'rooftops' folder containing the filtered image of each
+  It will also generate an 'img' folder containing the filtered image of each
   rooftop, with the same naming convention as the previous images with the
   latitude and longitude values of the center of the rooftop.
 
@@ -23,17 +24,18 @@ def generate_rooftops(predictions_path: pathlib.Path,
     -center_latlon: tuple of the latitude and longitude of the center of the rooftop.
     -area: estimated area of the rooftop in square meters.
     -original_image_name: name of the image from which the rooftop was extracted.
-    -rooftop_image_name: name of the generated image of the rooftop in the 'rooftops' folder.
+    -rooftop_image_name: name of the generated image of the rooftop in the 'img' folder.
 
 
   ---
   
   predictions_path  -- Path, folder in which segmentation masks and filtered images are stored.
   output_path       -- Path, folder in which rooftop analysis will be stored.
+  output_filename   -- str, name for the rooftops analysis file.
   minimum_area      -- int, minimum area in square meters to consider a rooftop for the analysis.
   '''
   output_path.mkdir(parents=True, exist_ok=True)
-  img_output_path = output_path / 'rooftops'
+  img_output_path = output_path / 'img'
   img_output_path.mkdir(parents=True, exist_ok=True)
 
   rooftops = []
@@ -87,6 +89,6 @@ def generate_rooftops(predictions_path: pathlib.Path,
 
         rooftops.append(rooftop)
   
-  passion.util.io.save_to_csv(rooftops, output_path, 'rooftops')
+  passion.util.io.save_to_csv(rooftops, output_path, output_filename)
 
   return

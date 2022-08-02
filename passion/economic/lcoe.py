@@ -13,7 +13,8 @@ DEFAULT_LCOE_PARAMS = {
   'yearly_degradation': 0.005
 }
 
-def generate_economic(reskit_path: pathlib.Path, output_path: pathlib.Path):
+def generate_economic(input_path: pathlib.Path, input_filename: str,
+                      output_path: pathlib.Path, output_filename: str):
   '''Generates a CSV file containing the economic potential of the input sections.
   The used metric is the Levelised Cost of Electricity, that divides the overall
   costs of an energy system during its lifetime by its overall benefits, or
@@ -39,11 +40,13 @@ def generate_economic(reskit_path: pathlib.Path, output_path: pathlib.Path):
 
   ---
   
-  reskit_path   -- Path, folder in which the technical potential analysis is stored.
-  output_path     -- Path, folder in which the economic potential analysis will be stored.
+  input_path       -- Path, folder in which the technical potential analysis is stored.
+  input_filename   -- str, name for the technical analysis output.
+  output_path      -- Path, folder in which the economic potential analysis will be stored.
+  output_filename  -- str, name for the economic analysis output.
   '''
   output_path.mkdir(parents=True, exist_ok=True)
-  sections = passion.util.io.load_csv(reskit_path, 'technical.csv')
+  sections = passion.util.io.load_csv(input_path, input_filename + '.csv')
 
   for section in sections:
     section['lcoe_eur_MWh'] = calculate_lcoe(section['yearly_gen'],
@@ -51,7 +54,7 @@ def generate_economic(reskit_path: pathlib.Path, output_path: pathlib.Path):
                                              section['modules_cost'],
                                              DEFAULT_LCOE_PARAMS)
 
-  passion.util.io.save_to_csv(sections, output_path, 'lcoe')
+  passion.util.io.save_to_csv(sections, output_path, output_filename)
   return
 
 def calculate_lcoe(generation: float, capacity: float, modules_cost: float, lcoe_params: dict):
