@@ -73,22 +73,25 @@ def generate_sections(input_path: pathlib.Path,
     img_path = input_path / 'img' / rooftop['rooftop_image_name']
     filename = img_path.stem
     rooftop_image = passion.util.io.load_image(img_path)
-    img_shape = rooftop_image.shape[:2]
 
     rooftop['image'] = rooftop_image
     rooftop['tilt_angle'] = tilt_angle
 
-    img_center_latlon, zoom = passion.util.gis.extract_filename(filename)
+    _, zoom = passion.util.gis.extract_filename(filename)
+    img_center_latlon = rooftop['img_center_latlon']
+    img_shape = rooftop['original_img_shape']
 
     rooftop_sections = process_rooftop(rooftop)
 
     sections = sections + rooftop_sections
 
     for section in rooftop_sections:
-      section['outline_latlon'] = passion.util.shapes.xy_outline_to_latlon(section['outline_xy'], img_center_latlon, img_shape, zoom)
-      section['outline_lonlat'] = passion.util.shapes.xy_outline_to_latlon(section['outline_xy'], img_center_latlon, img_shape, zoom, lonlat_order=True)
+      outline_latlon = passion.util.shapes.xy_outline_to_latlon(section['outline_xy'], img_center_latlon, img_shape, zoom)
+      section['outline_latlon'] = shapely.geometry.Polygon(outline_latlon).wkt
+      outline_lonlat = passion.util.shapes.xy_outline_to_latlon(section['outline_xy'], img_center_latlon, img_shape, zoom, lonlat_order=True)
+      section['outline_latlon'] = shapely.geometry.Polygon(outline_latlon).wkt
 
-      center_latlon = passion.util.shapes.get_outline_center(section['outline_latlon'])
+      center_latlon = passion.util.shapes.get_outline_center(outline_latlon)
       section['center_lat'], section['center_lon'] = center_latlon
 
       area = passion.util.shapes.get_area(section['outline_xy'], center_latlon, zoom)
