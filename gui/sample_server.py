@@ -47,26 +47,17 @@ def index():
         control = True
        ).add_to(folium_map)
     
-    outlines = open_csv_results(pathlib.Path('workflow/output/economic/'), 'lcoe.csv')
-    add_outlines_layer(folium_map, outlines, 'economic')
+    outlines = open_csv_results(pathlib.Path('workflow/output/rooftops/'), 'rooftops.csv')
+    add_outlines_layer(folium_map, outlines, 'rooftops')
+    
+    outlines = open_csv_results(pathlib.Path('workflow/output/sections/'), 'sections.csv')
+    add_outlines_layer(folium_map, outlines, 'sections')
     
     outlines = open_csv_results(pathlib.Path('workflow/output/technical/'), 'technical.csv')
     add_outlines_layer(folium_map, outlines, 'technical')
     
-    outlines = open_csv_results(pathlib.Path('workflow/output/rooftops/'), 'rooftops.csv')
-    add_outlines_layer(folium_map, outlines, 'rooftops')
-    
-
-    outlines = open_csv_results(pathlib.Path('workflow/output/sections/'), 'sections.csv')
-    add_outlines_layer(folium_map, outlines, 'sections')
-    
-    # config.yml bbox frame
-    min_lat = 50.77850739604879
-    min_lon = 6.0768084397936395
-    max_lat = 50.77214558009357
-    max_lon = 6.091035433169415
-    
-    draw_bbox((min_lat, min_lon), (max_lat, max_lon), folium_map)
+    outlines = open_csv_results(pathlib.Path('workflow/output/economic/'), 'lcoe.csv')
+    add_outlines_layer(folium_map, outlines, 'economic')
 
     folium.LayerControl().add_to(folium_map)
     return folium_map._repr_html_()
@@ -74,7 +65,7 @@ def index():
 def add_outlines_layer(map, outlines, name):
     outlines_latlon_copy = deepcopy(outlines)
     geo_j = get_geoj_from_latlon_outlines(outlines_latlon_copy)
-    layer_geom = get_layer_from_geoj(name + '-latlon', geo_j)
+    layer_geom = get_layer_from_geoj(name + ' layer', geo_j)
     layer_geom.add_to(map)
     
     return
@@ -96,48 +87,18 @@ def get_geoj_from_latlon_outlines(outlines):
     return geo_j
 
 def get_layer_from_geoj(name, geo_j):
-    
+    print(geo_j)
     layer_geom = folium.FeatureGroup(name=name,control=True)
 
     for feature in geo_j.data['features']:
         # GEOJSON layer consisting of a single feature
         temp_layer = folium.GeoJson(feature)
         # create Popup and add it to our lone feature
-        #folium.Popup(feature['properties']['name']).add_to(temp_layer)
+        folium.Popup(name).add_to(temp_layer)
 
         # consolidate individual features back into the main layer
         temp_layer.add_to(layer_geom)
     return layer_geom
-
-def draw_bbox(min_latlon, max_latlon, map):
-    folium.Rectangle(
-        bounds=[
-            [min_latlon[0], min_latlon[1]],
-            [min_latlon[0], max_latlon[1]],
-            [max_latlon[0], max_latlon[1]],
-            [max_latlon[0], min_latlon[1]]
-            ],
-        color='#ff7800',
-        fill=True,
-        fill_color='#ffff00',
-        fill_opacity=0.15,
-        weight=0
-    ).add_to(map)
-    draw_circle(min_latlon[0], min_latlon[1], 'min_lat, min_lon', map, 'black')
-    draw_circle(min_latlon[0], max_latlon[1], 'min_lat, max_lon', map, 'black')
-    draw_circle(max_latlon[0], max_latlon[1], 'max_lat, max_lon', map, 'black')
-    draw_circle(max_latlon[0], min_latlon[1], 'max_lat, min_lon', map, 'black')
-
-def draw_circle(lat, lon, popup, map, color):
-    folium.CircleMarker(
-        location=[lat, lon],
-        popup=popup,
-        radius=4,
-        color=color,
-        fill_color=color,
-        fill_opacity=0.7,
-        weight=0
-        ).add_to(map)
 
 if __name__ == '__main__':
     app.run(debug=True)
