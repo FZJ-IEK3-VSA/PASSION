@@ -86,6 +86,10 @@ def generate_dataset(
     x1, x2 = min(x1, x2), max(x1, x2)
     y1, y2 = min(y1, y2), max(y1, y2)
 
+    # START CENTER INSTEAD OF BORDER
+    x1 = x1 + (request_width//2)
+    y1 = y1 + (request_height//2)
+
     current_x = x1
     current_y = y1
 
@@ -96,12 +100,13 @@ def generate_dataset(
 
     # x=0, y=0 is at lat=90 lon=-180
     pbar = tqdm.tqdm(total=math.ceil(abs(x1-x2)/request_width) * math.ceil(abs(y1-y2)/request_height), position=0, leave=True)
-    while ((current_y < y2) and valid_request):
+    while ((current_y  < y2) and valid_request):
       while ((current_x < x2) and valid_request):
         # Current image center latlon values
         current_lat, current_lon = passion.util.gis.xy_tolatlon(current_x, current_y, zoom)
 
-        try:  
+        try:
+          #TODO: adjust image center at the width and height borders, so that we cover the exact area
           limit_x, limit_y = current_x + request_width, current_y + request_height
           image_bbox = [ (current_x, current_y), (current_x, limit_y), (limit_x, limit_y), (limit_x, current_y) ]
 
@@ -119,7 +124,10 @@ def generate_dataset(
             if (is_null_image(img, service)):
               raise RuntimeError('Null image retrieved, {0} level of detail not available.'.format(zoom))
             
+            # WATERMARK ADJUSTMENT
             img = img.crop((0,0,request_width,request_height-watermark))
+            tmp_x, tmp_y = passion.util.gis.latlon_toXY(current_lat, current_lon, zoom)
+            current_lat, current_lon = passion.util.gis.xy_tolatlon(tmp_x, tmp_y - (watermark//2), zoom)
 
             if shapefile:
               img = filter_image_shapefile(img, shapefile_pixels_relative)
