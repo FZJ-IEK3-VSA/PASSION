@@ -2,6 +2,7 @@ import pathlib
 import pandas as pd
 import reskit as rk
 import shapely.geometry
+import shapely.wkt
 
 import passion.util
 
@@ -83,13 +84,14 @@ def generate_technical(input_path: pathlib.Path,
     lon = section['center_lon']
     elevation = section['elevation']
     capacity = section['capacity']
-    tilt = section['tilt_angle']
-    azimuth = section['azimuth']
+    tilt = float(section['tilt_angle'])
+    azimuth = float(section['azimuth'])
 
     # Not necessary for RESKit:
     area = section['area']
     flat = section['flat']
-    outline_latlon = shapely.geometry.Polygon(section['outline_latlon']).wkt
+    outline_latlon = shapely.wkt.loads(section['outline_latlon'])
+    outline_latlon = outline_latlon.wkt
     outline_xy = shapely.geometry.Polygon(section['outline_xy']).wkt
     original_image_name = section['original_image_name']
     section_image_name = section['section_image_name']
