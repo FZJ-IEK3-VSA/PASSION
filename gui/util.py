@@ -8,8 +8,8 @@ def rooftop_popup_html(table_dict, table_size=(200,60)):
     for key, value in table_dict.items():
         html_row = """
 <tr>
-<td style="background-color: """+ left_col_color +""";"><span style="color: #ffffff;">{0}</span></td>
-<td style="width: 150px;background-color: """.format(key)+ right_col_color +""";">{0}</td>""".format(value) + """
+<td style="background-color: """+ left_col_color +""";text-align: center"><span style="color: #ffffff;">{0}</span></td>
+<td style="width: 150px;background-color: """.format(key)+ right_col_color +""";text-align: center">{0}</td>""".format(value) + """
 </tr>
         """
         html_rows += html_row
