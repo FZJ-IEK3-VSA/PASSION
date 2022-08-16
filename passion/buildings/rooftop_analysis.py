@@ -80,14 +80,14 @@ def generate_rooftops(predictions_path: pathlib.Path,
       rooftop['outline_latlon'] = shapely.geometry.Polygon(outline_latlon).wkt
       outline_lonlat = passion.util.shapes.xy_outline_to_latlon(rooftop['outline_xy'], img_center_latlon, img_shape, zoom, lonlat_order=True)
       rooftop['outline_lonlat'] = shapely.geometry.Polygon(outline_lonlat).wkt
-      rooftop['center_latlon'] = passion.util.shapes.get_outline_center(outline_latlon)
+      rooftop['center_lat'], rooftop['center_lon'] = passion.util.shapes.get_outline_center(outline_latlon)
       rooftop['img_center_latlon'] = img_center_latlon
       rooftop['original_img_shape'] = img_shape
-      rooftop['area'] = passion.util.shapes.get_area(rooftop['outline_xy'], rooftop['center_latlon'], zoom)
+      rooftop['area'] = passion.util.shapes.get_area(rooftop['outline_xy'], (rooftop['center_lat'], rooftop['center_lon']), zoom)
       rooftop['original_image_name'] = mask_path.name.replace('_MASK', '')
 
       if rooftop['area'] > minimum_area:
-        rooftop['rooftop_image_name'] = passion.util.gis.get_filename(rooftop['center_latlon'], zoom)
+        rooftop['rooftop_image_name'] = passion.util.gis.get_filename((rooftop['center_lat'], rooftop['center_lon']), zoom)
 
         passion.util.io.save_image(rooftop_image, img_output_path, rooftop['rooftop_image_name'])
 

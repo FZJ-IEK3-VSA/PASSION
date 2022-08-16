@@ -121,8 +121,8 @@ def generate_technical(input_path: pathlib.Path,
     modules_cost = passion.util.io.safe_eval((xds.modules_cost[j]).values)
     
     section = {
-        'lat': lat,
-        'lon': lon,
+        'center_lat': lat,
+        'center_lon': lon,
         'yearly_gen': total_gen,
         'elevation': elevation,
         'capacity': capacity,

@@ -149,7 +149,7 @@ def process_rooftop(rooftop):
   flat_section['rooftop_id'] = r_id
   flat_section['section_id'] = 0
   flat_section['flat'] = 1.0
-  center_latitude = rooftop['center_latlon'][0]
+  center_latitude = rooftop['center_lat']
   flat_section['azimuth'] = get_optimal_azimuth(center_latitude)
   flat_section['tilt_angle'] = get_optimal_tilt(center_latitude)
   flat_section['outline_xy'] = outline
