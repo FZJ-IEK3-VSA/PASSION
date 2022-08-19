@@ -17,7 +17,7 @@ def rooftop_popup_html(table_dict, table_size=(200,60)):
     html = """<!DOCTYPE html>
 <html>
 <head>
-<h4 style="margin-bottom:10"; width="200px">{}</h4>""".format('Rooftop') + """
+<h4 style="margin-bottom:10"; width="200px">{}</h4>""".format(name) + """
 </head>
     <table style="height: {0}px; width: {1}px;">
 <tbody>
