@@ -39,7 +39,10 @@ def index():
     folium_map = folium.Map(location=start_coords, zoom_start=15)
 
     # TILE LAYERS
-    folium.TileLayer('cartodbpositron').add_to(folium_map)
+    folium.TileLayer(
+        'cartodbpositron',
+        overlay = False
+        ).add_to(folium_map)
     folium.TileLayer(
         tiles = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         attr = 'Esri',
@@ -49,49 +52,51 @@ def index():
        ).add_to(folium_map)
     
     outlines = open_csv_results(pathlib.Path('workflow/output/rooftops/'), 'rooftops.csv')
-    add_outlines_layer(folium_map, outlines, 'rooftops', '#96BDC6')
+    add_outlines_layer(folium_map, outlines, 'rooftops', '#96BDC6', 
+                        ['area', 'center_lat', 'center_lon'])
     
     outlines = open_csv_results(pathlib.Path('workflow/output/sections/'), 'sections.csv')
-    add_outlines_layer(folium_map, outlines, 'sections', '#15616D')
+    add_outlines_layer(folium_map, outlines, 'sections', '#15616D', 
+                        ['area', 'center_lat', 'center_lon', 'flat', 'azimuth', 'tilt_angle'])
     
     outlines = open_csv_results(pathlib.Path('workflow/output/technical/'), 'technical.csv')
-    add_outlines_layer(folium_map, outlines, 'technical', '#E3B505')
+    add_outlines_layer(folium_map, outlines, 'technical', '#E3B505', 
+                        ['area', 'center_lat', 'center_lon', 'yearly_gen', 'capacity', 'modules_cost'])
     
     outlines = open_csv_results(pathlib.Path('workflow/output/economic/'), 'lcoe.csv')
-    add_outlines_layer(folium_map, outlines, 'economic', '#81F499')
+    add_outlines_layer(folium_map, outlines, 'economic', '#81F499', 
+                        ['area', 'center_lat', 'center_lon', 'lcoe_eur_MWh'])
 
     folium.LayerControl().add_to(folium_map)
     return folium_map._repr_html_()
 
-def add_outlines_layer(map, outlines, name, color):
+def add_outlines_layer(map, outlines, name, color, display_properties=[]):
     outlines_latlon_copy = deepcopy(outlines)
-    geo_j = get_geoj_from_latlon_outlines(outlines_latlon_copy)
+    geo_j = get_geoj_from_latlon_outlines(outlines_latlon_copy, display_properties)
     layer_geom = get_layer_from_geoj(name + ' layer', geo_j, color)
     layer_geom.add_to(map)
     
     return
 
-def get_geoj_from_latlon_outlines(outlines):
-    gdf_data_center = []
-    gdf_data_area = []
+def get_geoj_from_latlon_outlines(outlines, display_properties):
+    display_dict = {}
+    for display_property in display_properties:
+        display_dict[display_property] = []
     for section in outlines:
         section_geom = shapely.wkt.loads(section['outline_latlon'])
 
         section_geom = transform(lambda x, y: (y, x), section_geom)
         section['outline_latlon'] = list(section_geom.exterior.coords)
-        try:
-            gdf_data_center.append((section['center_lat'], section['center_lon']))
-            gdf_data_area.append(section['area'])
-        except:
-            gdf_data_center.append(None)
-            gdf_data_area.append(None)
 
-    gdf_data = {}
-    gdf_data['gdf_data_center'] = gdf_data_center
-    gdf_data['gdf_data_area'] = gdf_data_area
+        for display_property in display_properties:
+            try:
+                display_dict[display_property] += [section[display_property]]
+            except:
+                display_dict[display_property] += [None]
+
     crs = {'init': 'epsg:4326'}
     polygon_gdf = gpd.GeoDataFrame(
-                                   data=gdf_data,
+                                   data=display_dict,
                                    crs=crs,
                                    geometry=[Polygon(section['outline_latlon']) for section in outlines]
                                    )
@@ -100,22 +105,19 @@ def get_geoj_from_latlon_outlines(outlines):
     return geo_j
 
 def get_layer_from_geoj(name, geo_j, color):
-    layer_geom = folium.FeatureGroup(name=name, control=True, show=False)
+    layer_geom = folium.FeatureGroup(name=name, control=True, show=False, overlay=True)
 
     for feature in geo_j.data['features']:
         # GEOJSON layer consisting of a single feature
         style = {'fillColor': color, 'lineColor': color, 'color': color}
         temp_layer = folium.GeoJson(feature, style_function=lambda x:style)
-        # create Popup and add it to our lone feature
-        area = feature['properties']['gdf_data_area']
-        outline_center = feature['properties']['gdf_data_center']
-        if outline_center == None: outline_center = [1,1]
-
+                    
         popup_dict = {
-            'name': 'Rooftop',
-            'area': str(int(area * 100) / 100) + ' m2',
-            'center': (int(outline_center[0] * 10000) / 10000, int(outline_center[1] * 10000) / 10000)
+            'name': name
         }
+        for key, value in feature['properties'].items():
+            popup_dict[key] = value
+
         html = rooftop_popup_html(popup_dict)
         iframe = branca.element.IFrame(html=html,width=300,height=150)
         folium.Popup(folium.Html(html, script=True), max_width=500).add_to(temp_layer)
