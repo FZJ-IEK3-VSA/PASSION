@@ -144,7 +144,6 @@ def process_rooftop(rooftop):
   
   sections = []
 
-  #TODO: for flat sections, save optimal value of tilt and orientation instead of 0
   flat_section = dict()
   flat_section['rooftop_id'] = r_id
   flat_section['section_id'] = 0
