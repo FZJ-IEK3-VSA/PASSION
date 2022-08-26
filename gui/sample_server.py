@@ -14,6 +14,9 @@ from shapely.ops import transform
 import shapely
 import pathlib
 import passion
+import matplotlib.colors
+import numpy as np
+import math
 
 from copy import deepcopy
 
@@ -52,23 +55,49 @@ def index():
        ).add_to(folium_map)
     
     outlines = open_csv_results(pathlib.Path('workflow/output/rooftops/'), 'rooftops.csv')
+    create_gradient_from_column(outlines, 'area', '#96BDC6', '#96BDC6')
     add_outlines_layer(folium_map, outlines, 'rooftops', '#96BDC6', 
-                        ['area', 'center_lat', 'center_lon'])
+                        ['area', 'center_lat', 'center_lon', 'color'])
     
     outlines = open_csv_results(pathlib.Path('workflow/output/sections/'), 'sections.csv')
+    create_gradient_from_column(outlines, 'area', '#96BDC6', '#96BDC6')
     add_outlines_layer(folium_map, outlines, 'sections', '#15616D', 
-                        ['area', 'center_lat', 'center_lon', 'flat', 'azimuth', 'tilt_angle'])
+                        ['area', 'center_lat', 'center_lon', 'flat', 'azimuth', 'tilt_angle', 'color'])
     
     outlines = open_csv_results(pathlib.Path('workflow/output/technical/'), 'technical.csv')
+    create_gradient_from_column(outlines, 'yearly_gen', '#ff0000', '#00ff00')
     add_outlines_layer(folium_map, outlines, 'technical', '#E3B505', 
-                        ['area', 'center_lat', 'center_lon', 'yearly_gen', 'capacity', 'modules_cost'])
+                        ['area', 'center_lat', 'center_lon', 'yearly_gen', 'capacity', 'modules_cost', 'color'])
     
     outlines = open_csv_results(pathlib.Path('workflow/output/economic/'), 'lcoe.csv')
+    create_gradient_from_column(outlines, 'lcoe_eur_MWh', '#ff0000', '#00ff00')
     add_outlines_layer(folium_map, outlines, 'economic', '#81F499', 
-                        ['area', 'center_lat', 'center_lon', 'lcoe_eur_MWh'])
+                        ['area', 'center_lat', 'center_lon', 'lcoe_eur_MWh', 'color'])
 
     folium.LayerControl().add_to(folium_map)
     return folium_map._repr_html_()
+
+def create_gradient_from_column(outlines, column, min_color, max_color):
+    min_value = 9999999999999999999999999999
+    max_value = -999999999999999999999999999
+    # get min and max values for column
+    for section in outlines:
+        if section[column] > max_value: max_value = section[column]
+        if section[column] < min_value: min_value = section[column]
+    # normalize value between 0 and 1
+    for section in outlines:
+        norm_value = (section[column] - min_value) / (max_value - min_value)
+        if (norm_value != 0): math.log(10*norm_value, 10) 
+        color = color_fader(min_color, max_color, norm_value)
+        section['color'] = color
+        
+    return
+
+# https://stackoverflow.com/a/50784012
+def color_fader(c1,c2,mix=0): #fade (linear interpolate) from color c1 (at mix=0) to c2 (mix=1)
+    c1=np.array(matplotlib.colors.to_rgb(c1))
+    c2=np.array(matplotlib.colors.to_rgb(c2))
+    return matplotlib.colors.to_hex((1-mix)*c1 + mix*c2)
 
 def add_outlines_layer(map, outlines, name, color, display_properties=[]):
     outlines_latlon_copy = deepcopy(outlines)
@@ -109,8 +138,15 @@ def get_layer_from_geoj(name, geo_j, color):
 
     for feature in geo_j.data['features']:
         # GEOJSON layer consisting of a single feature
-        style = {'fillColor': color, 'lineColor': color, 'color': color}
-        temp_layer = folium.GeoJson(feature, style_function=lambda x:style)
+        style = {
+            'fillColor': feature['properties']['color'],
+            'color': feature['properties']['color'] # line color
+            }
+        style_function = lambda x: {
+            'fillColor': x['properties']['color'],
+            'color': x['properties']['color'] # line color
+            }
+        temp_layer = folium.GeoJson(feature, style_function=style_function)
                     
         popup_dict = {
             'name': name
