@@ -52,7 +52,7 @@ SegmentationTraining:
   dataset_folder: '/storage/internal/data/r-pueblas/aachen_model/'
   output_folder: 'model'
   file_name: 'rooftop-segmentation'
-  batch_size: 1
-  n_epochs: 10
-  steps_per_epoch: 75
-  val_steps: 25
+  batch_size: 2
+  n_epochs: 30
+  steps_per_epoch: 5000
+  val_steps: 200
