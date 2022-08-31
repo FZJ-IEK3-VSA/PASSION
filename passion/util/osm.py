@@ -6,7 +6,7 @@ import passion.util
 
 OVERPASS_URL = "http://overpass-api.de/api/interpreter"
 
-def get_footprints_latlon(bbox: tuple):
+def get_footprints_latlon(bbox: tuple, osm_request_interval: float = 5):
   '''Given a bounding box, requests the OSM buildings of the area
   and returns them as a list of outlines.'''
   latlon1, latlon2 = bbox
@@ -17,7 +17,7 @@ def get_footprints_latlon(bbox: tuple):
   overpass_query_ways = """
   [out:json];
   way
-    ["building"="yes"]
+    ["building"]
     ({0},{1},{2},{3});
   out;
   """.format(min_lat, min_lon, max_lat, max_lon)
@@ -25,7 +25,7 @@ def get_footprints_latlon(bbox: tuple):
   overpass_query_nodes = """
   [out:json];
   way
-    ["building"="yes"]
+    ["building"]
     ({0},{1},{2},{3});
   (._;>;);
   out;
@@ -34,23 +34,31 @@ def get_footprints_latlon(bbox: tuple):
   #TODO: handle if empty request
 
   # workaround for hitting request limit (error 429) from overpass
-  time.sleep(5)
+  time.sleep(osm_request_interval)
   response = requests.get(OVERPASS_URL, 
                         params={'data': overpass_query_ways})
-
-  ways = response.json()
-
+  
+  try:
+    ways = response.json()
+  except:
+    return []
+  
   # workaround for hitting request limit (error 429) from overpass
-  time.sleep(5)
+  time.sleep(osm_request_interval)
   response = requests.get(OVERPASS_URL, 
                         params={'data': overpass_query_nodes})
-  nodes = response.json()
+                        
+  try:
+    nodes = response.json()
+  except:
+    return []
+  
 
-  get_node_latlon(ways['elements'][0]['nodes'][0], nodes['elements'])
+  buildings = []
+  if (ways['elements'] and nodes['elements']):
+    get_node_latlon(ways['elements'][0]['nodes'][0], nodes['elements'])
 
-  get_buildings(ways['elements'][:3], nodes['elements'])
-
-  buildings = get_buildings(ways['elements'], nodes['elements'])
+    buildings = get_buildings(ways['elements'], nodes['elements'])
 
   return buildings
 
