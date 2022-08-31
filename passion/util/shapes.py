@@ -94,11 +94,12 @@ def outlines_to_image(polygons, shape):
 
   img_bin = PIL.Image.new('L', (size_x, size_y))
   draw = PIL.ImageDraw.Draw(img_bin, 'L')
-  img_bin = PIL.Image.new('L', (size_x, size_y))
-  draw = PIL.ImageDraw.Draw(img_bin, 'L')
 
   for polygon in polygons:
-    draw.polygon(polygon, fill=255, outline=None)
+    polygon = shapely.geometry.Polygon(polygon)
+    shrunken_polygon = polygon.buffer(-2)
+    shrunken_polygon_list = list(shrunken_polygon.exterior.coords)
+    draw.polygon(shrunken_polygon_list, fill=255, outline=None)
 
   img_bin = np.asarray(img_bin)
   return img_bin
