@@ -7,21 +7,31 @@ ImageRetrieval:
   zoom: 19
   output_folder: satellite
   bbox:
-    min_lat: 50.77850739604879
-    min_lon: 6.0768084397936395
-    max_lat: 50.77214558009357
-    max_lon: 6.091035433169415
+    min_lat: 50.76900107193788
+    min_lon: 6.097842567710818
+    max_lat: 50.76379834423302
+    max_lon: 6.111769276140406
   
   #shapefile: 'workflow/input/aachen/aachen.shp'
 
 ImageSegmentation:
   output_folder: 'segmentation'
   model_rel_path: 'model/rooftop_segmentation.h5'
+  osm: True
+  tile_size: 512
+  stride: 256
+  save_masks: True
+  save_filtered: True
+  # Does not apply to osm:
+  polygon_simplification_distance: 15
+  kernel_size: 18 # For morphological opening and closing
+  # Does not apply to model:
+  osm_request_interval: 30
 
 RooftopAnalysis:
   output_folder: 'rooftops'
   file_name: 'rooftops'
-  minimum_area: 25
+  minimum_area: 100
 
 SectionAnalysis:
   output_folder: 'sections'
