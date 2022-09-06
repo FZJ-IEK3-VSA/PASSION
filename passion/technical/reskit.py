@@ -19,7 +19,6 @@ class PVModule():
     self.price = 350 # euros
 
 DEFAULT_PVMODULE = PVModule('LG370Q1C-A5', 370, (1.7,1.016), 2)
-#DEFAULT_PVMODULE = PVModule('LG370Q1C-A5', 0.37, (17.0,10.16), 2)
 DEFAULT_RESKIT_MODULE = 'LG Electronics LG370Q1C-A5'
 
 def set_pv_module(module: PVModule):
