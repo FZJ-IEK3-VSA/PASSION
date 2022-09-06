@@ -39,7 +39,7 @@ def open_csv_results(results_path, filename):
 @app.route('/')
 def index():
     start_coords = (50.77595349670269, 6.088548416982711)
-    folium_map = folium.Map(location=start_coords, zoom_start=15)
+    folium_map = folium.Map(location=start_coords, zoom_start=15, max_zoom=20)
 
     # TILE LAYERS
     folium.TileLayer(
@@ -115,7 +115,7 @@ def get_geoj_from_latlon_outlines(outlines, display_properties):
         section_geom = shapely.wkt.loads(section['outline_latlon'])
 
         section_geom = transform(lambda x, y: (y, x), section_geom)
-        section['outline_latlon'] = list(section_geom.exterior.coords)
+        section['outline_latlon'] = section_geom
 
         for display_property in display_properties:
             try:
@@ -127,7 +127,7 @@ def get_geoj_from_latlon_outlines(outlines, display_properties):
     polygon_gdf = gpd.GeoDataFrame(
                                    data=display_dict,
                                    crs=crs,
-                                   geometry=[Polygon(section['outline_latlon']) for section in outlines]
+                                   geometry=[section['outline_latlon'] for section in outlines]
                                    )
     geo_j = folium.GeoJson(polygon_gdf)
 

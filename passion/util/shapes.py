@@ -2,6 +2,7 @@ import numpy as np
 import PIL
 import PIL.ImageDraw
 import shapely.geometry
+from shapely import affinity
 import cv2
 
 import passion.util
@@ -140,3 +141,53 @@ def filter_image(image: np.ndarray, mask: np.ndarray):
       mask = np.stack((mask,)*n_channels, axis=-1)
   
   return (mask // normalize) * image
+
+def get_panel_layout(outline: shapely.geometry.Polygon,
+                     panel_size: tuple,
+                     azimuth: float,
+                     spacing_factor: float,
+                     border_spacing: int):
+  '''
+  Takes an outline, a panel size, azimuth and spacing factor,
+  and returns a shapely.geometry.MultiPolygon object of the
+  found layout of panels inside the outline.
+  '''
+  panel_width, panel_height = panel_size
+  
+  cell_width  = panel_width * spacing_factor
+  cell_height = panel_height * spacing_factor
+
+  grid_cells = []
+  outter_cells = []
+  panel_cells = []
+
+  # get polygon bbox oriented to 0 degrees
+  xmin, ymin, xmax, ymax = outline.bounds
+  bbox = shapely.geometry.Polygon([(xmin,ymin),(xmin,ymax),(xmax,ymax),(xmax,ymin),(xmin,ymin)])
+
+  # Shrink objective polygon by offset in order to have space in the borders
+  outline = outline.buffer(-border_spacing)
+  for x0 in np.arange(xmin, xmax, cell_width):
+    for y0 in np.arange(ymin, ymax, cell_height):
+      # getting the installation bbox from the grid
+      x1 = x0+cell_width
+      y1 = y0+cell_height
+      new_cell = shapely.geometry.box(x0, y0, x1, y1)
+      new_cell = affinity.rotate(new_cell, -azimuth, origin=bbox.centroid)
+
+      # shrinking the bbox to get the actual panel bbox
+      panel_x0 = x0+((cell_width - panel_width)/2)
+      panel_y0 = y0+((cell_height - panel_height)/2)
+      panel_x1 = panel_x0+panel_width
+      panel_y1 = panel_y0+panel_height
+      panel_cell = shapely.geometry.box(panel_x0, panel_y0, panel_x1, panel_y1)
+      panel_cell = affinity.rotate(panel_cell, -azimuth, origin=bbox.centroid)
+
+      # if the installation space is inside the rooftop, add it
+      if new_cell.within(outline):
+        grid_cells.append(new_cell)
+        panel_cells.append(panel_cell)
+      else:
+        outter_cells.append(new_cell)
+
+  return shapely.geometry.MultiPolygon(panel_cells)
