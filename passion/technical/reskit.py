@@ -11,13 +11,15 @@ class PVModule():
   Properties of the panel that are interesting for the
   analysis are the module's capacity, area and price.
   '''
-  def __init__(self, name, capacity, area, space_factor):
+  def __init__(self, name, capacity, size, spacing_factor):
     self.name = name
-    self.capacity = capacity
-    self.area = area * space_factor
-    self.price = 350
+    self.capacity = capacity # kW
+    self.spacing_factor = spacing_factor # x times the panel size
+    self.size = size # meters
+    self.price = 350 # euros
 
-DEFAULT_PVMODULE = PVModule('LG370Q1C-A5', 370, 1.7*1.016, 1.4)
+DEFAULT_PVMODULE = PVModule('LG370Q1C-A5', 370, (1.7,1.016), 2)
+#DEFAULT_PVMODULE = PVModule('LG370Q1C-A5', 0.37, (17.0,10.16), 2)
 DEFAULT_RESKIT_MODULE = 'LG Electronics LG370Q1C-A5'
 
 def set_pv_module(module: PVModule):
@@ -73,33 +75,55 @@ def generate_technical(input_path: pathlib.Path,
 
   sections = passion.util.io.load_csv(input_path, input_filename + '.csv')
   for i, section in enumerate(sections):
-    
-    n_panels = section['area'] // DEFAULT_PVMODULE.area
-    section['capacity'] = DEFAULT_PVMODULE.capacity * n_panels
-    # TODO: request elevation from 'https://api.opentopodata.org/v1/'
-    section['elevation'] = 204.0
-
-    # Necessary for RESKit:
+    # for the panel layout, we need:
+    azimuth = float(section['azimuth'])
     lat = section['center_lat']
     lon = section['center_lon']
-    elevation = section['elevation']
-    capacity = section['capacity']
-    tilt = float(section['tilt_angle'])
-    azimuth = float(section['azimuth'])
-
-    # Not necessary for RESKit:
-    area = section['area']
-    flat = section['flat']
-    outline_latlon = shapely.wkt.loads(section['outline_latlon'])
-    outline_latlon = outline_latlon.wkt
-    outline_xy = shapely.geometry.Polygon(section['outline_xy']).wkt
+    outline_xy_poly = shapely.geometry.Polygon(section['outline_xy'])
+    # panel size meters to pixels
     original_image_name = section['original_image_name']
-    section_image_name = section['section_image_name']
-    modules_cost = DEFAULT_PVMODULE.price * n_panels
+    _latlon, zoom = passion.util.gis.extract_filename(original_image_name.replace('.png', ''))
+    gr = passion.util.gis.ground_resolution(lat, zoom)
+    
+    pv_size_pixels = (DEFAULT_PVMODULE.size[0] / gr, DEFAULT_PVMODULE.size[1] / gr)
+    layout_multipolygon = passion.util.shapes.get_panel_layout(outline_xy_poly,
+                                           pv_size_pixels,
+                                           azimuth,
+                                           DEFAULT_PVMODULE.spacing_factor,
+                                           8)
+    outline_xy = layout_multipolygon.wkt
+    n_panels = len(layout_multipolygon.geoms)
+    if n_panels > 0:
+      # Necessary for RESKit:
+      section['capacity'] = DEFAULT_PVMODULE.capacity * n_panels
+      capacity = float(section['capacity'])
+      tilt = float(section['tilt_angle'])
+      section['elevation'] = 204.0 #TODO: request elevation from 'https://api.opentopodata.org/v1/'
+      elevation = section['elevation']
 
-    placements.loc['S'+str(i)] = [ lon, lat, elevation, capacity, tilt, azimuth, area,
-                                   flat, outline_latlon, outline_xy, original_image_name,
-                                   section_image_name, n_panels, modules_cost ]
+      # Not necessary for RESKit:
+      area = section['area']
+      flat = section['flat']
+
+      # Convert panel outline into latlon outline, accounting for the pixel offset
+      polygons = []
+      for geom in layout_multipolygon.geoms:
+        points = []
+        for x,y in geom.exterior.coords:
+          _bbox = passion.util.gis.get_image_bbox(_latlon, zoom, (1475,2000))
+          offset_x, offset_y = passion.util.gis.get_image_offset(_bbox, zoom)
+          lat, lon = passion.util.gis.xy_tolatlon(x + offset_x, y + offset_y, zoom)
+          points.append((lat, lon))
+        polygons.append(shapely.geometry.Polygon(points))
+      outline_latlon = shapely.geometry.MultiPolygon(polygons)
+      outline_latlon = outline_latlon.wkt
+
+      section_image_name = section['section_image_name']
+      modules_cost = float(DEFAULT_PVMODULE.price * n_panels)
+
+      placements.loc['S'+str(i)] = [ lon, lat, elevation, capacity, tilt, azimuth, area,
+                                    flat, outline_latlon, outline_xy, original_image_name,
+                                    section_image_name, n_panels, modules_cost ]
 
   xds = rk.solar.openfield_pv_sarah_unvalidated(placements, sarah_path, era5_path, module=DEFAULT_RESKIT_MODULE)
 
