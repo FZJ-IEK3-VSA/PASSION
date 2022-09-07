@@ -99,6 +99,8 @@ def outlines_to_image(polygons, shape):
   for polygon in polygons:
     polygon = shapely.geometry.Polygon(polygon)
     shrunken_polygon = polygon.buffer(-2)
+    # If buffering breaks the polygon, keep the original one
+    if (type(shrunken_polygon) == shapely.geometry.MultiPolygon): shrunken_polygon = polygon
     shrunken_polygon_list = list(shrunken_polygon.exterior.coords)
     draw.polygon(shrunken_polygon_list, fill=255, outline=None)
 
