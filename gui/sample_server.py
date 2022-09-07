@@ -38,7 +38,7 @@ def open_csv_results(results_path, filename):
 
 @app.route('/')
 def index():
-    start_coords = (50.77595349670269, 6.088548416982711)
+    start_coords = (50.91391751362997, 6.360619039652212)
     folium_map = folium.Map(location=start_coords, zoom_start=15, max_zoom=20)
 
     # TILE LAYERS
