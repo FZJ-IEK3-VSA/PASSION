@@ -7,17 +7,17 @@ ImageRetrieval:
   zoom: 19
   output_folder: satellite
   bbox:
-    min_lat: 50.76900107193788
-    min_lon: 6.097842567710818
-    max_lat: 50.76379834423302
-    max_lon: 6.111769276140406
+    min_lat: 50.91585498874942
+    min_lon: 6.355956942018892
+    max_lat: 50.91275830191584
+    max_lon: 6.364138595048635
   
   #shapefile: 'workflow/input/aachen/aachen.shp'
 
 ImageSegmentation:
   output_folder: 'segmentation'
   model_rel_path: 'model/rooftop_segmentation.h5'
-  osm: True
+  osm: False
   tile_size: 512
   stride: 256
   save_masks: True
