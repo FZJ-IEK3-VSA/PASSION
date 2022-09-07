@@ -1,4 +1,4 @@
-name: passion-gui
+name: passion
 channels:
   - conda-forge
   - defaults
