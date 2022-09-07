@@ -5,7 +5,7 @@ with open(os.path.join(dir_path, 'README.md'), "r") as fh:
 
 setuptools.setup(
     name='PASSION',
-    version='0.0.0',
+    version='0.1.1',
     author='Rodrigo Pueblas',
     author_email='rodrigo.pueblas@hotmail.com',
     description='Photovoltaic Satellite Segmentation',
@@ -14,7 +14,27 @@ setuptools.setup(
     url='',
     include_package_data=True,
     packages=setuptools.find_packages(),
-    setup_requires=['setuptools-git'],
-    classifiers=[],
-    keywords=['photovoltaic', 'segmentation'],
+    setup_requires=[
+        'setuptools-git'
+    ],
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.8',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Topic :: Scientific/Engineering :: GIS',
+        'Topic :: Scientific/Engineering :: Image Processing',
+        'Topic :: Software Development :: Libraries :: Python Modules'
+    ],
+    keywords=[
+        'photovoltaic',
+        'renewables',
+        'satellite'
+    ],
 )
