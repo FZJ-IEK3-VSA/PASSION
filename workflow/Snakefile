@@ -14,11 +14,8 @@ economic_output = economic_folder + '/' + config['EconomicAnalysis']['file_name'
 
 segmentation_dataset_folder = config['SegmentationTraining']['dataset_folder']
 segmentation_model_folder = config['SegmentationTraining']['output_folder']
-<<<<<<< HEAD
 segmentation_model_output = segmentation_model_folder + '/' + config['SegmentationTraining']['folder_name']
-=======
-segmentation_model_output = segmentation_model_folder + '/' + config['SegmentationTraining']['file_name']
->>>>>>> dd7805d22d1342c17e6fa6801b7893014bff947b
+
 rule all:
     input:
         results + "/" + economic_output + '.csv'
