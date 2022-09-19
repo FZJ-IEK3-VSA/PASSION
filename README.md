@@ -25,7 +25,7 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 ### Prerequisites
 
 Given the model size, this repository requires git LFS. You can install it in your system with the following guide:
-http://arfc.github.io/manual/guides/git-lfs
+http://arfc.github.io/manual/guides/git-lfs. Please make sure that the model under `workflow/output/model/rooftop_segmentation.h5` is properly downloaded before moving on.
 
 To set the project up and running any of the steps, you need to run in the root folder:
 
@@ -50,6 +50,24 @@ api_key: '<API_KEY>'
 
 ---
 
+### Required data
+
+Each of the different steps will require different data files. You can run any of the steps without requiring the data files that the other steps need.
+
+1. Satellite retrieval:
+   * No additional data files are required. Only a valid API key for one of the satellite providers.
+2. Rooftop segmentation.
+   * The file `workflow/output/model/rooftop_segmentation.h5` is needed, and should have been directly downloaded when cloning the repository. Git-LFS is needed for the model to be properly downloaded.
+3. Section segmentation.
+   * The file `workflow/output/tilt_distribution.pkl` is needed, and should have been directly downloaded when cloning the repository.
+4. Technical potential simulation:
+   * ERA5 dataset: WIP, external dependency
+   * SARAH dataset: WIP, external dependency
+5. Economic potential:
+   * No additional data files are required.
+
+---
+
 ### Software usage
 
 To run the whole pipeline with the given configuration, you can choose to run:
@@ -70,6 +88,11 @@ snakemake --gui
 
 ```
 snakemake --profile workflow/slurm
+```
+
+To train the model, run the following argument after any of the above:
+```
+snakemake [...] --until segmentation_training
 ```
 
 ---
