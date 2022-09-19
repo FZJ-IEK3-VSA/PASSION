@@ -14,7 +14,7 @@ economic_output = economic_folder + '/' + config['EconomicAnalysis']['file_name'
 
 segmentation_dataset_folder = config['SegmentationTraining']['dataset_folder']
 segmentation_model_folder = config['SegmentationTraining']['output_folder']
-segmentation_model_output = segmentation_model_folder + '/' + config['SegmentationTraining']['file_name']
+segmentation_model_output = segmentation_model_folder + '/' + config['SegmentationTraining']['folder_name']
 rule all:
     input:
         results + "/" + economic_output + '.csv'
@@ -106,7 +106,7 @@ rule segmentation_training:
     input:
         expand(segmentation_dataset_folder)
     output:
-        results + '/' + segmentation_model_output + '.h5'
+        directory(results + '/' + segmentation_model_output)
     conda:
         '../requirements.yml'
     shell:

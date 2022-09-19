@@ -16,7 +16,7 @@ ImageRetrieval:
 
 ImageSegmentation:
   output_folder: 'segmentation'
-  model_rel_path: 'model/rooftop_segmentation.h5'
+  model_rel_path: 'model/rooftop-segmentation'
   osm: False
   tile_size: 512
   stride: 256
@@ -49,10 +49,10 @@ EconomicAnalysis:
   file_name: 'lcoe'
 
 SegmentationTraining:
-  dataset_folder: '/storage/internal/data/r-pueblas/aachen_model/'
+  dataset_folder: '/storage/internal/data/r-pueblas/inria/tiles_final/'
   output_folder: 'model'
-  file_name: 'rooftop-segmentation'
-  batch_size: 2
+  folder_name: 'rooftop-segmentation'
+  batch_size: 8
   n_epochs: 30
   steps_per_epoch: 5000
   val_steps: 200
