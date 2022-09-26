@@ -1,6 +1,6 @@
 import passion
 import argparse, pathlib, yaml, pathlib, shapefile
-import tensorflow as tf
+import torch
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', metavar='C', type=str, help='Config file path')
@@ -30,6 +30,9 @@ is_osm = segmentation_config.get('osm')
 polygon_simplification_distance = segmentation_config.get('polygon_simplification_distance')
 polygon_simplification_distance = float(polygon_simplification_distance)
 
+rooftop_background_class = segmentation_config.get('rooftop_background_class')
+rooftop_background_class = int(rooftop_background_class)
+
 kernel_size = segmentation_config.get('kernel_size')
 kernel_size = int(kernel_size)
 
@@ -46,12 +49,14 @@ else:
     model_rel_path = segmentation_config['model_rel_path']
     model_path = results_path / model_rel_path
 
-    model = tf.keras.models.load_model(str(model_path))
+    #model = tf.keras.models.load_model(str(model_path))
+    model = torch.load(str(model_path))
 
     passion.segmentation.prediction.segment_dataset(
         input_path = input_path,
         model = model,
         output_path = output_path,
+        background_class = rooftop_background_class,
         polygon_simplification_distance = polygon_simplification_distance,
         kernel_size = kernel_size
         )

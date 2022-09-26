@@ -1,4 +1,4 @@
-name: passion
+name: passion-dev
 channels:
   - conda-forge
   - defaults
@@ -51,4 +51,4 @@ dependencies:
     - torch==1.12.1
     - torchvision
     - torchmetrics
-    - .
+    - -e .

@@ -1,6 +1,5 @@
 import passion
 import argparse, pathlib, yaml, pathlib, shapefile
-import tensorflow as tf
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', metavar='C', type=str, help='Config file path')

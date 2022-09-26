@@ -5,8 +5,6 @@ image_retrieval_output = config['ImageRetrieval']['output_folder']
 segmentation_output = config['ImageSegmentation']['output_folder']
 rooftops_folder = config['RooftopAnalysis']['output_folder']
 rooftops_output = rooftops_folder + '/' + config['RooftopAnalysis']['file_name']
-sections_folder = config['SectionAnalysis']['output_folder']
-sections_output = sections_folder + '/' + config['SectionAnalysis']['file_name']
 technical_folder = config['TechnicalAnalysis']['output_folder']
 technical_output = technical_folder + '/' + config['TechnicalAnalysis']['file_name']
 economic_folder = config['EconomicAnalysis']['output_folder']
@@ -18,7 +16,8 @@ segmentation_model_output = segmentation_model_folder + '/' + config['Segmentati
 
 rule all:
     input:
-        results + "/" + economic_output + '.csv'
+        #results + "/" + economic_output + '.csv'
+        results + "/" + rooftops_output + '.csv'
 
 checkpoint generate_dataset:
     output:
@@ -67,21 +66,9 @@ rule analyze_rooftops:
         python workflow/scripts/analyze_rooftops.py --config workflow/config.yml
         '''
 
-rule analyze_sections:
-    input:
-        results + "/" + rooftops_output + '.csv'
-    output:
-        results + "/" + sections_output + '.csv'
-    conda:
-        '../requirements.yml'
-    shell:
-        '''
-        python workflow/scripts/analyze_sections.py --config workflow/config.yml
-        '''
-                
 rule analyze_technical:
     input:
-        results + "/" + sections_output + '.csv'
+        results + "/" + rooftops_output + '.csv'
     output:
         results + "/" + technical_output + '.csv'
     conda:

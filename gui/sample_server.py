@@ -57,8 +57,9 @@ def index():
     outlines = open_csv_results(pathlib.Path('workflow/output/rooftops/'), 'rooftops.csv')
     create_gradient_from_column(outlines, 'area', '#96BDC6', '#96BDC6')
     add_outlines_layer(folium_map, outlines, 'rooftops', '#96BDC6', 
-                        ['area', 'center_lat', 'center_lon', 'color'])
+                        ['area', 'azimuth', 'tilt_angle', 'center_lat', 'center_lon', 'color'])
     
+    '''
     outlines = open_csv_results(pathlib.Path('workflow/output/sections/'), 'sections.csv')
     create_gradient_from_column(outlines, 'area', '#96BDC6', '#96BDC6')
     add_outlines_layer(folium_map, outlines, 'sections', '#15616D', 
@@ -73,7 +74,7 @@ def index():
     create_gradient_from_column(outlines, 'lcoe_eur_MWh', '#ff0000', '#00ff00')
     add_outlines_layer(folium_map, outlines, 'economic', '#81F499', 
                         ['area', 'center_lat', 'center_lon', 'lcoe_eur_MWh', 'color'])
-
+    '''
     folium.LayerControl().add_to(folium_map)
     return folium_map._repr_html_()
 

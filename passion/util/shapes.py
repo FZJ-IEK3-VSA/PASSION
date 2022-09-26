@@ -35,14 +35,15 @@ def xy_outline_to_latlon(outline_xy: list,
 
 def get_outline_center(outline: list):
   '''Given an outline as a list of coordinates, return its center.'''
+  poly = shapely.geometry.Polygon(outline)
   center_x, center_y = shapely.geometry.Polygon(outline).centroid.coords.xy
   return (center_x[0], center_y[0])
 
-def get_area(outline_xy: list, center_latlon: tuple, zoom: int):
-  '''Given a list of coordinates, the latitude and zoom level,
+def get_area(polygon: shapely.geometry.Polygon, center_latlon: tuple, zoom: int):
+  '''Given a polygon in pixel coordinates, the latitude and zoom level,
   returns the area in square meters.
   '''
-  polygon = shapely.geometry.Polygon(outline_xy)
+  polygon = shapely.geometry.Polygon(polygon)
   center_latitude = center_latlon[0]
   
   ground_resolution = passion.util.gis.ground_resolution(center_latitude, zoom)
@@ -71,10 +72,11 @@ def get_rooftop_image(outline, image):
 
   return result
 
-def filter_outline(outline, image):
-  '''Takes an outline in a list of coordinates and a numpy image and returns the
+def filter_outline(polygon, image):
+  '''Takes an outline as a Polygon and a numpy image and returns the
   filtered image using the outline as a mask.
   '''
+  outline = polygon.exterior.coords
 
   size_y, size_x = image.shape[:2]
   
@@ -88,7 +90,7 @@ def filter_outline(outline, image):
 
   return image
 
-def outlines_to_image(polygons, shape):
+def outlines_to_image(polygons, classes, shape):
   '''Takes a list of polygons and an image size, and returns the numpy
   representation of the binary image with the polygons as a mask.'''
   size_y, size_x = shape[:2]
@@ -96,13 +98,17 @@ def outlines_to_image(polygons, shape):
   img_bin = PIL.Image.new('L', (size_x, size_y))
   draw = PIL.ImageDraw.Draw(img_bin, 'L')
 
-  for polygon in polygons:
+  for i, polygon in enumerate(polygons):
     polygon = shapely.geometry.Polygon(polygon)
     shrunken_polygon = polygon.buffer(-2)
+    
     # If buffering breaks the polygon, keep the original one
     if (type(shrunken_polygon) == shapely.geometry.MultiPolygon): shrunken_polygon = polygon
+    # If buffering empties the polygon, keep the original one
+    if shrunken_polygon.is_empty: shrunken_polygon = polygon
+
     shrunken_polygon_list = list(shrunken_polygon.exterior.coords)
-    draw.polygon(shrunken_polygon_list, fill=255, outline=None)
+    draw.polygon(shrunken_polygon_list, fill=int(classes[i]), outline=None)
 
   img_bin = np.asarray(img_bin)
   return img_bin
@@ -112,37 +118,41 @@ def get_image_rooftops_xy(image: np.ndarray):
   of polygons as a list of coordinates. The representation is in xy
   format relative to the image.
   '''
-  img_size_y, img_size_x = image.shape
+  seg_classes = np.unique(image)[np.unique(image) != 0]
+  class_list = []
+  polygon_list = []
+  for seg_class in seg_classes:
+    image_class = image.copy()
+    image_class = (image_class == seg_class).astype(np.uint8)
+    
+    contours, hierarchy = cv2.findContours(image_class, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_L1)
+    
+    for contour in contours:
+      if len(contour) > 2:
+        points = []
+        for point in contour:
+          points.append((point[0][0], point[0][1]))
+        poly = shapely.geometry.Polygon(points)
+        # Fix invalid polygons
+        poly = poly.buffer(0)
+        # TODO: deal multipolygons
+        if poly.geom_type == 'MultiPolygon':
+          poly = list(poly.geoms)[0]
+        
+        polygon_list.append(poly)
+        class_list.append(seg_class)
   
-  ret, thresh = cv2.threshold(image, 127, 255, 0)
-  # FOR A SAMPLE, NUMBER OF POINTS
-  # CHAIN_APPROX_SIMPLE: 44
-  # CHAIN_APPROX_TC89_L1: 25
-  # CHAIN_APPROX_TC89_KCOS: 25
-  contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_L1)
-
-  poly_list = []
-  for contour in contours:
-    if len(contour) > 2:
-      points = []
-      for point in contour:
-        points.append((point[0][0], point[0][1]))
-
-      poly = shapely.geometry.Polygon(points)
-
-      poly_list.append(list(poly.exterior.coords))
-
-  return poly_list
+  return class_list, polygon_list
 
 def filter_image(image: np.ndarray, mask: np.ndarray):
   '''Filters an image with a binary or grayscale mask.'''
-  normalize = max(1, np.amax(mask))
+  mask = (mask != 0).astype(int)
 
   if len(image.shape) > 2:
       n_channels = image.shape[-1]
       mask = np.stack((mask,)*n_channels, axis=-1)
   
-  return (mask // normalize) * image
+  return mask * image
 
 def get_panel_layout(outline: shapely.geometry.Polygon,
                      panel_size: tuple,

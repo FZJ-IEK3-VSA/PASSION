@@ -1,6 +1,5 @@
 import passion
 import argparse, pathlib, yaml, pathlib, shapefile
-import tensorflow as tf
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', metavar='C', type=str, help='Config file path')
@@ -26,6 +25,13 @@ output_path = results_path / output_folder
 
 output_name = rooftop_config['file_name']
 
+tilt_distribution_rel_path = rooftop_config['tilt_rel_path']
+tilt_distribution_path = results_path / tilt_distribution_rel_path
+
 minimum_area = int(rooftop_config.get('minimum_area'))
 
-passion.buildings.rooftop_analysis.generate_rooftops(input_path, output_path, output_name, minimum_area)
+passion.buildings.rooftop_analysis.generate_rooftops(input_path,
+                                                     output_path,
+                                                     output_name,
+                                                     tilt_distribution_path,
+                                                     minimum_area)

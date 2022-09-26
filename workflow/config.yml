@@ -2,7 +2,7 @@
 results_path: workflow/output
 
 ImageRetrieval:
-  api_key: ''
+  api_key: 'Ajw5tKMynzRmVO14JKzr12Zqp1wNb96-2GClyxQKF3tQPW8a-9BYn4-Tp_-kXQYK'
   service: bing
   zoom: 19
   output_folder: satellite
@@ -16,26 +16,23 @@ ImageRetrieval:
 
 ImageSegmentation:
   output_folder: 'segmentation'
-  model_rel_path: 'model/rooftop-segmentation'
+  model_rel_path: 'model/rooftop-segmentation/model_best.pth'
   osm: False
   tile_size: 512
-  stride: 256
+  stride: 512
   save_masks: True
   save_filtered: True
   # Does not apply to osm:
-  polygon_simplification_distance: 15
-  kernel_size: 18 # For morphological opening and closing
+  rooftop_background_class: 17
+  polygon_simplification_distance: 6
+  kernel_size: 7 # For morphological opening and closing
   # Does not apply to model:
   osm_request_interval: 30
 
 RooftopAnalysis:
   output_folder: 'rooftops'
   file_name: 'rooftops'
-  minimum_area: 100
-
-SectionAnalysis:
-  output_folder: 'sections'
-  file_name: 'sections'
+  minimum_area: 20
   tilt_rel_path: 'tilt_distribution.pkl'
   
 TechnicalAnalysis:
@@ -49,7 +46,7 @@ EconomicAnalysis:
   file_name: 'lcoe'
 
 SegmentationTraining:
-  dataset_folder: '/storage/internal/data/r-pueblas/inria/tiles_final/'
+  dataset_folder: '/home/r-pueblas/rooftop-segmentation-datasets/data/INRIA/output'
   output_folder: 'model'
   folder_name: 'rooftop-segmentation'
   batch_size: 8

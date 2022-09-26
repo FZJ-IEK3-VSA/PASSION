@@ -1,17 +1,21 @@
 import pathlib
-import tensorflow as tf
 import numpy as np
 import cv2
 import PIL
 from enum import Enum
 import tqdm
 import shapely.geometry
+import PIL
+
+import torch
+import torchvision
 
 import passion.util
 
 def segment_dataset(input_path: pathlib.Path,
-                    model: tf.keras.Model,
+                    model: torch.nn.Module,
                     output_path: pathlib.Path,
+                    background_class: int,
                     tile_size: int = 512,
                     stride: int = 512,
                     save_masks: bool = True,
@@ -38,10 +42,10 @@ def segment_dataset(input_path: pathlib.Path,
 
     image = preprocess_input(image)
 
-    seg_image = segment_img(image, model, tile_size, stride)
+    seg_image = segment_img(image, model, tile_size, stride, background_class)
 
     seg_image = postprocess_output(seg_image, polygon_simplification_distance, kernel_size)
-
+    
     if save_masks: passion.util.io.save_image(seg_image, output_path, img_path.stem + '_MASK' + '.png')
 
     if save_filtered:
@@ -50,9 +54,10 @@ def segment_dataset(input_path: pathlib.Path,
   return
 
 def segment_img(image: np.ndarray,
-                model: tf.keras.Model,
+                model: torch.nn.Module,
                 tile_size: int,
-                stride: int
+                stride: int,
+                background_class: int
 ):
   '''Segments a single image in numpy format with a
   given model. Tile size has to be specified and must
@@ -69,19 +74,22 @@ def segment_img(image: np.ndarray,
 
   seg_tiles = []
   for tile in tiles:
-    prediction = segment_tile(tile, model, tile_size)
+    prediction = segment_tile(tile, model, tile_size, background_class)
     if type(prediction) != np.ndarray:
       print('Error processing tile, returning...')
       return None
     seg_tiles.append(prediction)
   seg_tiles = np.array(seg_tiles)
 
-  seg_image = compose_tiles(seg_tiles, image.shape[:2], stride, MERGE_MODE.VOTE)
+  seg_image = compose_tiles(seg_tiles, image.shape[:2], stride)
 
   return seg_image
   
 
-def segment_tile(tile: np.ndarray, model: tf.keras.Model, tile_size: int):
+def segment_tile(tile: np.ndarray,
+                 model: torch.nn.Module,
+                 tile_size: int,
+                 background_class: int):
   '''Segments a single tile of model's input size.
   This is a single prediction of the model.
   '''
@@ -92,10 +100,24 @@ def segment_tile(tile: np.ndarray, model: tf.keras.Model, tile_size: int):
     print('Image shape: {0} not in format {1}x{1}x3'.format(tile.shape, tile_size))
     return None
   
-  pred = model.predict(np.expand_dims(tile, axis=0))
-  pred_mask = np.round(pred)
+  trans = torchvision.transforms.Compose([torchvision.transforms.ToTensor(), ])
+  tile = cv2.cvtColor(tile, cv2.COLOR_BGR2RGB)
+  tile = trans(tile).reshape(1, 3, tile_size, tile_size)
+  DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+  tile = tile.to(DEVICE)
+  pred = model(tile)
+  pred = torch.argmax(pred, dim=1)
+  pred = pred.cpu().data.numpy().squeeze()
+  tile = tile.cpu().data.numpy().squeeze()
+  tile = np.moveaxis(tile, 0, -1)
 
-  return pred_mask.squeeze()
+  # If background is not 0, transform it to 0 and add 1 to the rest of classes
+  rooftop_pred = pred.copy()
+  if background_class != 0:
+    rooftop_pred[pred==background_class] = 0
+    rooftop_pred[pred!=background_class] = (rooftop_pred[pred!=background_class] + 1)
+
+  return rooftop_pred
 
 def divide_img_tiles(image: np.ndarray, tile_size: int, stride: int):
   '''Divides an image into a list of tiles of specified size.'''
@@ -111,14 +133,16 @@ def divide_img_tiles(image: np.ndarray, tile_size: int, stride: int):
   
   return np.array(tiles)
 
+'''
 class MERGE_MODE(Enum):
-  '''Custom enum to register the different merging policies.'''
+  \'''Custom enum to register the different merging policies.\'''
   OR, AND, VOTE = range(3)
+'''
 
 def compose_tiles(tiles: list,
                   img_shape: tuple,
-                  stride: int,
-                  merge_mode: MERGE_MODE=MERGE_MODE.AND
+                  stride: int
+                  #merge_mode: MERGE_MODE=MERGE_MODE.AND
 ):
   '''Composes back a list of tiles into a single image.
 
@@ -148,18 +172,18 @@ def compose_tiles(tiles: list,
 
   final_pred = PIL.Image.new('L', (img_size_x, img_size_y), color=1)
   
+  '''
   if merge_mode == MERGE_MODE.AND:
     sliding_window_mask = np.array(PIL.Image.new('L', (img_size_x, img_size_y), color=1))
   else:
     sliding_window_mask = np.array(PIL.Image.new('L', (img_size_x, img_size_y), color=0))
-
+  '''
   current_x = 0
   current_y = 0
 
   for i, tile in enumerate(tiles):
-    p = np.expand_dims(tile.squeeze(), axis=2)
-    p = tf.keras.preprocessing.image.array_to_img(p)
-
+    p = PIL.Image.fromarray(np.uint8(tile))
+    '''
     if tile_size_x != stride:
       former = sliding_window_mask[current_y:current_y+tile_size_y,current_x:current_x+tile_size_x]
       new = np.asarray(p)
@@ -184,7 +208,7 @@ def compose_tiles(tiles: list,
 
       target_shape = sliding_window_mask[current_y:current_y+tile_size_y,current_x:current_x+tile_size_x].shape
       sliding_window_mask[current_y:current_y+tile_size_y,current_x:current_x+tile_size_x] = merge[0:target_shape[0], 0:target_shape[1]]
-    
+    '''
     final_pred.paste(p, box=(current_x,current_y,current_x+tile_size_x,current_y+tile_size_y))
     
     
@@ -196,10 +220,9 @@ def compose_tiles(tiles: list,
 
   final_pred_arr = np.asarray(final_pred)
 
-  threshold = np.amax(final_pred_arr) // 2
-
-  final_pred_arr = (final_pred_arr > threshold).astype(np.uint8) * 255
-
+  #threshold = np.amax(final_pred_arr) // 2
+  #final_pred_arr = (final_pred_arr > threshold).astype(np.uint8) * 255
+  
   return final_pred_arr
 
 def preprocess_input(image: np.ndarray):
@@ -216,30 +239,34 @@ def postprocess_output(image: np.ndarray, simplification_distance: float = 8, ke
   '''
   kernel = np.ones((kernel_size, kernel_size), np.uint8)
 
-  # dilation + erosion (closing)
-  image = cv2.dilate(image, kernel)
-  image = cv2.erode(image, kernel)
-
-  # opening + closing
-  image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
-  image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
-
-  ret, thresh = cv2.threshold(image, 127, 255, 0)
-
-  contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_L1)
-
   poly_list = []
+  class_list = []
+  seg_classes = np.unique(image)[np.unique(image) != 0]
+  for seg_class in seg_classes:
+    image_class = image.copy()
 
-  for contour in contours:
-    outlines = []
-    for point in contour:
-      outlines.append((point[0][0], point[0][1]))
-    
-    poly = shapely.geometry.Polygon(outlines)
-    # RDP algorithm
-    poly = poly.simplify(simplification_distance)
-    poly_list.append(list(poly.exterior.coords))
+    # dilation + erosion (closing)
+    image_class = cv2.dilate(image_class, kernel)
+    image_class = cv2.erode(image_class, kernel)
+    # opening + closing
+    image_class = cv2.morphologyEx(image_class, cv2.MORPH_OPEN, kernel)
+    image_class = cv2.morphologyEx(image_class, cv2.MORPH_CLOSE, kernel)
+
+    image_class = (image_class == seg_class).astype(np.uint8)
+    contours, hierarchy = cv2.findContours(image_class, cv2.RETR_TREE, cv2.CHAIN_APPROX_TC89_L1)
   
-  out = passion.util.shapes.outlines_to_image(poly_list, image.shape[:2])
+    for contour in contours:
+      if len(contour) > 2:
+        outlines = []
+        for point in contour:
+          outlines.append((point[0][0], point[0][1]))
+        
+        poly = shapely.geometry.Polygon(outlines)
+        # RDP algorithm
+        poly = poly.simplify(simplification_distance)
+        poly_list.append(poly)
+        class_list.append(seg_class)
+  
+  out = passion.util.shapes.outlines_to_image(poly_list, class_list, image.shape[:2])
 
   return out
