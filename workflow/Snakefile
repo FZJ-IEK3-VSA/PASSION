@@ -10,14 +10,13 @@ technical_output = technical_folder + '/' + config['TechnicalAnalysis']['file_na
 economic_folder = config['EconomicAnalysis']['output_folder']
 economic_output = economic_folder + '/' + config['EconomicAnalysis']['file_name']
 
-segmentation_dataset_folder = config['SegmentationTraining']['dataset_folder']
+segmentation_dataset_folder = config['SegmentationTraining']['train_folder']
 segmentation_model_folder = config['SegmentationTraining']['output_folder']
 segmentation_model_output = segmentation_model_folder + '/' + config['SegmentationTraining']['folder_name']
 
 rule all:
     input:
-        #results + "/" + economic_output + '.csv'
-        results + "/" + rooftops_output + '.csv'
+        results + "/" + economic_output + '.csv'
 
 checkpoint generate_dataset:
     output:

@@ -46,10 +46,11 @@ EconomicAnalysis:
   file_name: 'lcoe'
 
 SegmentationTraining:
-  dataset_folder: '/home/r-pueblas/rooftop-segmentation-datasets/data/INRIA/output'
+  train_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed_aug/train'
+  val_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed/val'
   output_folder: 'model'
   folder_name: 'rooftop-segmentation'
+  num_classes: 18
   batch_size: 8
-  n_epochs: 30
-  steps_per_epoch: 5000
-  val_steps: 200
+  learning_rate: 0.00001
+  n_epochs: 10

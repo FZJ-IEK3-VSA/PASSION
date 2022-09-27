@@ -47,13 +47,12 @@ class SegmentationDataset(torch.utils.data.Dataset):
 def train_model(train_data_path: pathlib.Path,
                 val_data_path: pathlib.Path,
                 model_output_path: pathlib.Path,
-                num_classes: int = 17,
+                num_classes: int = 18,
                 batch_size: int = 1,
                 learning_rate: float = 0.00001,
-                n_epochs: int = 10,
-                steps_per_epoch: int = 75,
-                val_steps: int = 25,
-                callbacks: list = []):
+                n_epochs: int = 10):
+  model_output_path.mkdir(parents=True, exist_ok=True)
+  
   train_image_paths = sorted(list((train_data_path / 'image').glob('*.png')))
   train_image_paths = [str(path) for path in train_image_paths]
   train_label_paths = sorted(list((train_data_path / 'label').glob('*.png')))
@@ -89,7 +88,7 @@ def train_model(train_data_path: pathlib.Path,
     alpha=None,
     gamma=2,
     reduction='mean',
-    device='cuda:0',
+    device=DEVICE,
     dtype=torch.float32,
     force_reload=False
   )
@@ -128,8 +127,11 @@ def train_model(train_data_path: pathlib.Path,
       (x, y) = (x.to(DEVICE), y.to(DEVICE))
       # perform a forward pass and calculate the training loss
       pred = unet(x)
-      y = y.type(torch.cuda.LongTensor).squeeze()
-      #y = replaceTensor(y)
+      if DEVICE == "cuda":
+        y = y.type(torch.cuda.LongTensor).squeeze()
+      else:
+        y = y.type(torch.LongTensor).squeeze()
+        
       loss = loss_func(pred, (y))
       # first, zero out any previously accumulated gradients, then
       # perform backpropagation, and then update model parameters
@@ -143,7 +145,10 @@ def train_model(train_data_path: pathlib.Path,
       pred = torch.argmax(pred, dim=1)
       total += y.size().numel()
       total_correct += (pred == y).sum().item()
-      pred = pred.type(torch.cuda.LongTensor).squeeze()
+      if DEVICE == "cuda":
+        pred = pred.type(torch.cuda.LongTensor).squeeze()
+      else:
+        pred = pred.type(torch.LongTensor).squeeze()
       cm += confmat(pred, y)
 
     train_iou = intersection_over_union(cm.cpu().detach().numpy())
@@ -163,8 +168,10 @@ def train_model(train_data_path: pathlib.Path,
         (x, y) = (x.to(DEVICE), y.to(DEVICE))
         # make the predictions and calculate the validation loss
         pred = unet(x)
-
-        y = y.type(torch.cuda.LongTensor).squeeze()
+        if DEVICE == "cuda":
+          y = y.type(torch.cuda.LongTensor).squeeze()
+        else:
+          y = y.type(torch.LongTensor).squeeze()
         #y = replaceTensor(y)
         loss = loss_func(pred, torch.squeeze(y))
         total_val_loss += loss
@@ -173,7 +180,11 @@ def train_model(train_data_path: pathlib.Path,
         total_val += y.size().numel()
         total_val_correct += (pred == y).sum().item()
 
-        pred = pred.type(torch.cuda.LongTensor).squeeze()
+        if DEVICE == "cuda":
+          pred = pred.type(torch.cuda.LongTensor).squeeze()
+        else:
+          pred = pred.type(torch.LongTensor).squeeze()
+
         j_s = jaccard((pred), (y))
         cm += confmat(pred, y)
       val_iou = intersection_over_union(cm.cpu().detach().numpy())
