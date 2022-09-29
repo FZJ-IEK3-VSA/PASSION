@@ -154,15 +154,11 @@ def filter_image(image: np.ndarray, mask: np.ndarray):
   
   return mask * image
 
-def get_panel_layout(outline: shapely.geometry.Polygon,
-                     panel_size: tuple,
-                     azimuth: float,
-                     spacing_factor: float,
-                     border_spacing: int):
+def get_layout(outline, panel_size, azimuth, spacing_factor, border_spacing, offset):
   '''
-  Takes an outline, a panel size, azimuth and spacing factor,
-  and returns a shapely.geometry.MultiPolygon object of the
-  found layout of panels inside the outline.
+  Takes an outline, a panel size, azimuth, spacing factor,
+  minimum space to the border and starting offset for
+  the grid, and returns the list of found panels.
   '''
   panel_width, panel_height = panel_size
   
@@ -175,6 +171,11 @@ def get_panel_layout(outline: shapely.geometry.Polygon,
 
   # get polygon bbox oriented to 0 degrees
   xmin, ymin, xmax, ymax = outline.bounds
+  xmin += offset
+  ymin += offset
+  xmax += offset
+  ymax += offset
+  
   bbox = shapely.geometry.Polygon([(xmin,ymin),(xmin,ymax),(xmax,ymax),(xmax,ymin),(xmin,ymin)])
 
   # Shrink objective polygon by offset in order to have space in the borders
@@ -201,5 +202,35 @@ def get_panel_layout(outline: shapely.geometry.Polygon,
         panel_cells.append(panel_cell)
       else:
         outter_cells.append(new_cell)
+  return panel_cells
+
+def get_panel_layout(outline: shapely.geometry.Polygon,
+                     panel_size: tuple,
+                     azimuth: float,
+                     spacing_factor: float,
+                     border_spacing: int,
+                     n_offset: int,
+                    ):
+  '''
+  Takes an outline, a panel size, azimuth and spacing factor,
+  and returns a shapely.geometry.MultiPolygon object of the
+  found layout of panels inside the outline.
+  Tries n_offset times both the vertical and horizontal
+  layouts, starting the grid on a different offset
+  to find the optimal.
+  '''
+  if n_offset < 1: n_offset = 1
+  panel_width, panel_height = panel_size
+
+  cell_length  = max(panel_width, panel_height) * spacing_factor
+  
+  panel_cells = []
+  for offset in np.arange(0, cell_length, cell_length / n_offset):
+    p_h = get_layout(outline, (panel_width, panel_height), azimuth, spacing_factor, border_spacing, offset)
+    if len(p_h) > len(panel_cells):
+      panel_cells = p_h
+    p_v = get_layout(outline, (panel_height, panel_width), azimuth, spacing_factor, border_spacing, offset)
+    if len(p_v) > len(panel_cells):
+      panel_cells = p_v
 
   return shapely.geometry.MultiPolygon(panel_cells)

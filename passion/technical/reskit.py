@@ -88,8 +88,9 @@ def generate_technical(input_path: pathlib.Path,
     layout_multipolygon = passion.util.shapes.get_panel_layout(outline_xy_poly,
                                            pv_size_pixels,
                                            azimuth,
-                                           DEFAULT_PVMODULE.spacing_factor,
-                                           8)
+                                           spacing_factor = DEFAULT_PVMODULE.spacing_factor,
+                                           border_spacing = 8,
+                                           n_offset = 5)
     outline_xy = layout_multipolygon.wkt
     n_panels = len(layout_multipolygon.geoms)
     if n_panels > 0:
