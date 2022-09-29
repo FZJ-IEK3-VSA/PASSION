@@ -15,7 +15,7 @@ ImageRetrieval:
   #shapefile: 'workflow/input/aachen/aachen.shp'
 
 ImageSegmentation:
-  output_folder: 'segmentation'
+  output_folder: 'segmentation/rooftops'
   model_rel_path: 'model/rooftop-segmentation/model_best.pth'
   osm: False
   tile_size: 512
@@ -28,10 +28,22 @@ ImageSegmentation:
   kernel_size: 7 # For morphological opening and closing
   # Does not apply to model:
   osm_request_interval: 30
+  
+SuperstructureSegmentation:
+  output_folder: 'segmentation/superstructures'
+  model_rel_path: 'model/pv-segmentation/model_best.pth'
+  tile_size: 512
+  stride: 512
+  save_masks: True
+  save_filtered: True
+  rooftop_background_class: 0
+  polygon_simplification_distance: 6
+  kernel_size: 7 # For morphological opening and closing
 
 RooftopAnalysis:
   output_folder: 'rooftops'
   file_name: 'rooftops'
+  superstructures_file_name: 'superstructures'
   minimum_area: 20
   tilt_rel_path: 'tilt_distribution.pkl'
   
@@ -45,12 +57,22 @@ EconomicAnalysis:
   output_folder: 'economic'
   file_name: 'lcoe'
 
-SegmentationTraining:
-  train_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed_aug/train'
-  val_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed/val'
+RooftopSegmentationTraining:
+  train_folder: '/home/r-pueblas/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed_aug/train'
+  val_folder: '/home/r-pueblas/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed/val'
   output_folder: 'model'
   folder_name: 'rooftop-segmentation'
   num_classes: 18
+  batch_size: 8
+  learning_rate: 0.00001
+  n_epochs: 10
+
+SuperstructureSegmentationTraining:
+  train_folder: '/home/r-pueblas/rooftop-segmentation-datasets/data/RID/output/masks_superstructures_reviewed_aug/train'
+  val_folder: '/home/r-pueblas/rooftop-segmentation-datasets/data/RID/output/masks_superstructures_reviewed/val'
+  output_folder: 'model'
+  folder_name: 'pv-segmentation'
+  num_classes: 3
   batch_size: 8
   learning_rate: 0.00001
   n_epochs: 10

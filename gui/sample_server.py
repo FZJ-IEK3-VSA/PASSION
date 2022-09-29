@@ -58,6 +58,19 @@ def index():
     create_gradient_from_column(outlines, 'area', '#96BDC6', '#96BDC6')
     add_outlines_layer(folium_map, outlines, 'rooftops', '#96BDC6', 
                         ['area', 'azimuth', 'tilt_angle', 'center_lat', 'center_lon', 'color'])
+    superstructures = open_csv_results(pathlib.Path('workflow/output/rooftops/'), 'superstructures.csv')
+
+    panels = []
+    obstacles = []
+    for superstructure in superstructures:
+        if superstructure['type'] == 1: panels.append(superstructure)
+        else: obstacles.append(superstructure)
+    create_gradient_from_column(panels, 'area', '#FDD017', '#FDD017')
+    add_outlines_layer(folium_map, panels, 'panels', '#FDD017',
+                        ['area', 'color'])
+    create_gradient_from_column(obstacles, 'area', '#C68E17', '#C68E17')
+    add_outlines_layer(folium_map, obstacles, 'obstacles', '#C68E17',
+                        ['area', 'color'])
     
     outlines = open_csv_results(pathlib.Path('workflow/output/technical/'), 'technical.csv')
     create_gradient_from_column(outlines, 'yearly_gen', '#ff0000', '#00ff00')

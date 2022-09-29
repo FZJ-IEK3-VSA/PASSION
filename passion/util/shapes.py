@@ -7,18 +7,24 @@ import cv2
 
 import passion.util
 
-def xy_outline_to_latlon(outline_xy: list,
+def xy_outline_to_latlon(poly_xy: list,
                          img_center_latlon: tuple,
                          img_shape: tuple,
                          zoom: int,
                          lonlat_order: bool = False
 ):
-  '''Takes a list of points in a pixel coordinate system and trasforms it
+  '''Takes a polygon or list of polygons in a pixel coordinate system and trasforms them
   into latitude and longitude taking into account the zoom level.
 
   If lonlat_order is set to True, the returned list will be in
   longitude latitude format instead of latitude longitude.
   '''
+  if poly_xy.geom_type == 'MultiPolygon':
+    polys_latlon = []
+    for poly in poly_xy:
+      poly_latlon = xy_outline_to_latlon(poly, img_center_latlon, img_shape, zoom, lonlat_order)
+      polys_latlon.append(poly_latlon)
+    return shapely.geometry.MultiPolygon(polys_latlon)
   
   img_center_lat, img_center_lon = img_center_latlon
   img_center_x, img_center_y = passion.util.gis.latlon_toXY(img_center_lat, img_center_lon, zoom)
@@ -26,24 +32,23 @@ def xy_outline_to_latlon(outline_xy: list,
   img_start_x = img_center_x - (img_size_x // 2)
   img_start_y = img_center_y - (img_size_y // 2)
 
+  outline_xy = poly_xy.exterior.coords
   outline_latlon = []
   for point in outline_xy:
     lat, lon = passion.util.gis.xy_tolatlon(img_start_x + point[0], img_start_y + point[1], zoom)
     new_point = [lon, lat] if lonlat_order else [lat, lon]
     outline_latlon.append(new_point)
-  return outline_latlon
+  return shapely.geometry.Polygon(outline_latlon)
 
-def get_outline_center(outline: list):
+def get_outline_center(poly: shapely.geometry.Polygon):
   '''Given an outline as a list of coordinates, return its center.'''
-  poly = shapely.geometry.Polygon(outline)
-  center_x, center_y = shapely.geometry.Polygon(outline).centroid.coords.xy
+  center_x, center_y = poly.centroid.coords.xy
   return (center_x[0], center_y[0])
 
 def get_area(polygon: shapely.geometry.Polygon, center_latlon: tuple, zoom: int):
   '''Given a polygon in pixel coordinates, the latitude and zoom level,
   returns the area in square meters.
   '''
-  polygon = shapely.geometry.Polygon(polygon)
   center_latitude = center_latlon[0]
   
   ground_resolution = passion.util.gis.ground_resolution(center_latitude, zoom)
@@ -53,16 +58,15 @@ def get_area(polygon: shapely.geometry.Polygon, center_latlon: tuple, zoom: int)
   
   return area_meters
 
-def get_rooftop_image(outline, image):
+def get_rooftop_image(poly, image):
   '''Given an image and an outline as a list of coordinates, returns the
   filtered image of the rooftop cropped to its bounding box.
   TODO: docstring'''
-  poly = shapely.geometry.Polygon(outline)
   minx, miny, maxx, maxy = poly.bounds
 
   image_portion = image[int(miny):int(maxy), int(minx):int(maxx)]
 
-  outline_image = filter_outline(outline, image)
+  outline_image = filter_outline(poly, image)
 
   outline_image_portion = outline_image[int(miny):int(maxy), int(minx):int(maxx)]
 
@@ -75,7 +79,12 @@ def get_rooftop_image(outline, image):
 def filter_outline(polygon, image):
   '''Takes an outline as a Polygon and a numpy image and returns the
   filtered image using the outline as a mask.
+  TODO: filter inner holes and properly handle MultiPolygons
   '''
+  if polygon.geom_type == 'MultiPolygon':
+    no_holes = shapely.geometry.MultiPolygon(shapely.geometry.Polygon(p.exterior) for p in polygon)
+    polygon = max(no_holes, key=lambda a: a.area)
+
   outline = polygon.exterior.coords
 
   size_y, size_x = image.shape[:2]
@@ -234,3 +243,15 @@ def get_panel_layout(outline: shapely.geometry.Polygon,
       panel_cells = p_v
 
   return shapely.geometry.MultiPolygon(panel_cells)
+
+def filter_polygon_holes(classes: list, polygons: list):
+  ''''''
+  filter_polygons = []
+  for i, p_a in enumerate(polygons):
+    for j, p_b in enumerate(polygons):
+      if i != j:
+        if p_a.contains(p_b): filter_polygons.append(j)
+  
+  polygons = [p for i, p in enumerate(polygons) if i not in filter_polygons]
+  classes = [c for i, c in enumerate(classes) if i not in filter_polygons]
+  return classes, polygons

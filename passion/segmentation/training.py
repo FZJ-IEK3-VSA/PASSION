@@ -94,6 +94,7 @@ def train_model(train_data_path: pathlib.Path,
   )
   loss_func = focal_loss
 
+  print(f'Initializing ResNetUNet with {num_classes} classes...')
   unet = models.ResNetUNet(num_classes).to(DEVICE)
   unet.to(DEVICE)
   optimizer = torch.optim.Adam(unet.parameters(), lr=learning_rate)

@@ -8,7 +8,7 @@ from torchvision.transforms import CenterCrop
 from torch.nn import functional as F
 import torch
 
-NUM_CLASSES = 17
+NUM_CLASSES = 18
 INPUT_IMAGE_HEIGHT, INPUT_IMAGE_WIDTH = 512, 512
 
 class Block(Module):
