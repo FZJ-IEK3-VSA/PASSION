@@ -48,7 +48,7 @@ def generate_technical(input_path: pathlib.Path,
     -outline_xy: list of tuples indicating the section outline relative to the original image.
     -outline_latlon: list of tuples indicating the section outline in latitude and longitude.
     -original_image_name: name of the image from which the rooftop was extracted.
-    -section_image_name: name of the generated image of the section in the 'img' folder.
+    -rooftop_image_name: name of the generated image of the section in the 'img' folder.
     -modules_cost: total estimated cost of the system PV modules.
   
   Solar simulation is carried out with RESKit. This requires two datasets:
@@ -70,7 +70,7 @@ def generate_technical(input_path: pathlib.Path,
   placements = pd.DataFrame(columns=[
                       'lon', 'lat', 'elev', 'capacity', 'tilt', 'azimuth', 'area',
                       'flat', 'outline_latlon', 'outline_xy', 'original_image_name',
-                      'section_image_name', 'n_panels', 'modules_cost'])
+                      'rooftop_image_name', 'n_panels', 'modules_cost'])
 
   sections = passion.util.io.load_csv(input_path, input_filename + '.csv')
   for i, section in enumerate(sections):
@@ -78,7 +78,7 @@ def generate_technical(input_path: pathlib.Path,
     azimuth = float(section['azimuth'])
     lat = section['center_lat']
     lon = section['center_lon']
-    outline_xy_poly = shapely.geometry.Polygon(section['outline_xy'])
+    outline_xy_poly = shapely.wkt.loads(section['outline_xy'])
     # panel size meters to pixels
     original_image_name = section['original_image_name']
     _latlon, zoom = passion.util.gis.extract_filename(original_image_name.replace('.png', ''))
@@ -117,12 +117,12 @@ def generate_technical(input_path: pathlib.Path,
       outline_latlon = shapely.geometry.MultiPolygon(polygons)
       outline_latlon = outline_latlon.wkt
 
-      section_image_name = section['section_image_name']
+      rooftop_image_name = section['rooftop_image_name']
       modules_cost = float(DEFAULT_PVMODULE.price * n_panels)
 
       placements.loc['S'+str(i)] = [ lon, lat, elevation, capacity, tilt, azimuth, area,
                                     flat, outline_latlon, outline_xy, original_image_name,
-                                    section_image_name, n_panels, modules_cost ]
+                                    rooftop_image_name, n_panels, modules_cost ]
 
   xds = rk.solar.openfield_pv_sarah_unvalidated(placements, sarah_path, era5_path, module=DEFAULT_RESKIT_MODULE)
 
@@ -140,7 +140,7 @@ def generate_technical(input_path: pathlib.Path,
     outline_latlon = passion.util.io.safe_eval((xds.outline_latlon[j]).values)
     outline_xy = passion.util.io.safe_eval((xds.outline_xy[j]).values)
     original_image_name = passion.util.io.safe_eval((xds.original_image_name[j]).values)
-    section_image_name = passion.util.io.safe_eval((xds.section_image_name[j]).values)
+    rooftop_image_name = passion.util.io.safe_eval((xds.rooftop_image_name[j]).values)
     modules_cost = passion.util.io.safe_eval((xds.modules_cost[j]).values)
     
     section = {
@@ -155,7 +155,7 @@ def generate_technical(input_path: pathlib.Path,
         'flat': flat,
         'outline_latlon': outline_latlon,
         'outline_xy': outline_xy,
-        'section_image_name': section_image_name,
+        'rooftop_image_name': rooftop_image_name,
         'original_image_name': original_image_name,
         'modules_cost': modules_cost
     }

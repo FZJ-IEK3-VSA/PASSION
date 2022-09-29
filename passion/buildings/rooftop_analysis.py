@@ -98,12 +98,12 @@ def generate_rooftops(predictions_path: pathlib.Path,
         if class_list[r_id] == 17:
           rooftop['azimuth'] = 180
           rooftop['tilt_angle'] = 31
-          rooftop['flat'] = 1
+          rooftop['flat'] = 1.0
         else:
           rooftop['azimuth'] = get_azimuth_from_segmentation(class_list[r_id])
           tilt_distribution = passion.util.io.load_pickle(tilt_distribution_path)
           rooftop['tilt_angle'] = get_tilt(tilt_distribution)
-          rooftop['flat'] = 0
+          rooftop['flat'] = 0.0
 
         rooftop_image = passion.util.shapes.get_rooftop_image(rooftop_outline, img_filtered)
         rooftop['rooftop_image_name'] = passion.util.gis.get_filename((rooftop['center_lat'], rooftop['center_lon']), zoom)

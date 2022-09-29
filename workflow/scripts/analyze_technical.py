@@ -13,13 +13,13 @@ with open(configfile, "r") as stream:
         print(exc)
         exit
 
-section_config = config.get('SectionAnalysis')
+rooftop_config = config.get('RooftopAnalysis')
 technical_config = config.get('TechnicalAnalysis')
 results_path = pathlib.Path(config.get('results_path'))
 
-input_folder = section_config['output_folder']
+input_folder = rooftop_config['output_folder']
 input_path = results_path / input_folder
-input_name = section_config['file_name']
+input_name = rooftop_config['file_name']
 
 output_folder = technical_config['output_folder']
 output_path = results_path / output_folder

@@ -59,22 +59,16 @@ def index():
     add_outlines_layer(folium_map, outlines, 'rooftops', '#96BDC6', 
                         ['area', 'azimuth', 'tilt_angle', 'center_lat', 'center_lon', 'color'])
     
-    '''
-    outlines = open_csv_results(pathlib.Path('workflow/output/sections/'), 'sections.csv')
-    create_gradient_from_column(outlines, 'area', '#96BDC6', '#96BDC6')
-    add_outlines_layer(folium_map, outlines, 'sections', '#15616D', 
-                        ['area', 'center_lat', 'center_lon', 'flat', 'azimuth', 'tilt_angle', 'color'])
-    
     outlines = open_csv_results(pathlib.Path('workflow/output/technical/'), 'technical.csv')
     create_gradient_from_column(outlines, 'yearly_gen', '#ff0000', '#00ff00')
     add_outlines_layer(folium_map, outlines, 'technical', '#E3B505', 
                         ['area', 'center_lat', 'center_lon', 'yearly_gen', 'capacity', 'modules_cost', 'color'])
     
     outlines = open_csv_results(pathlib.Path('workflow/output/economic/'), 'lcoe.csv')
-    create_gradient_from_column(outlines, 'lcoe_eur_MWh', '#ff0000', '#00ff00')
+    create_gradient_from_column(outlines, 'lcoe_eur_MWh', '#00ff00', '#ff0000')
     add_outlines_layer(folium_map, outlines, 'economic', '#81F499', 
                         ['area', 'center_lat', 'center_lon', 'lcoe_eur_MWh', 'color'])
-    '''
+    
     folium.LayerControl().add_to(folium_map)
     return folium_map._repr_html_()
 
@@ -88,7 +82,7 @@ def create_gradient_from_column(outlines, column, min_color, max_color):
     # normalize value between 0 and 1
     for section in outlines:
         norm_value = (section[column] - min_value) / (max_value - min_value)
-        if (norm_value != 0): math.log(10*norm_value, 10) 
+        #if (norm_value != 0): math.log(10*norm_value, 10)
         color = color_fader(min_color, max_color, norm_value)
         section['color'] = color
         
