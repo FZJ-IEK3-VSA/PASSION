@@ -13,28 +13,16 @@ from shapely.geometry import Polygon
 from shapely.ops import transform
 import shapely
 import pathlib
-import passion
-import matplotlib.colors
-import numpy as np
 import math
 
 from copy import deepcopy
 
 import folium
 import branca
-from util import rooftop_popup_html
+from util import rooftop_popup_html, create_gradient_from_column, open_csv_results
 
 app = Flask(__name__)
 
-def open_csv_results(results_path, filename):
-    if (results_path / filename).is_file():
-        # exists
-        results = passion.util.io.load_csv(results_path, filename)
-    else:
-        # does not exist
-        results = None
-    
-    return results
 
 @app.route('/')
 def index():
@@ -85,27 +73,6 @@ def index():
     folium.LayerControl().add_to(folium_map)
     return folium_map._repr_html_()
 
-def create_gradient_from_column(outlines, column, min_color, max_color):
-    min_value = 9999999999999999999999999999
-    max_value = -999999999999999999999999999
-    # get min and max values for column
-    for section in outlines:
-        if section[column] > max_value: max_value = section[column]
-        if section[column] < min_value: min_value = section[column]
-    # normalize value between 0 and 1
-    for section in outlines:
-        norm_value = (section[column] - min_value) / (max_value - min_value)
-        #if (norm_value != 0): math.log(10*norm_value, 10)
-        color = color_fader(min_color, max_color, norm_value)
-        section['color'] = color
-        
-    return
-
-# https://stackoverflow.com/a/50784012
-def color_fader(c1,c2,mix=0): #fade (linear interpolate) from color c1 (at mix=0) to c2 (mix=1)
-    c1=np.array(matplotlib.colors.to_rgb(c1))
-    c2=np.array(matplotlib.colors.to_rgb(c2))
-    return matplotlib.colors.to_hex((1-mix)*c1 + mix*c2)
 
 def add_outlines_layer(map, outlines, name, color, display_properties=[]):
     outlines_latlon_copy = deepcopy(outlines)
@@ -163,7 +130,6 @@ def get_layer_from_geoj(name, geo_j, color):
             popup_dict[key] = value
 
         html = rooftop_popup_html(popup_dict)
-        iframe = branca.element.IFrame(html=html,width=300,height=150)
         folium.Popup(folium.Html(html, script=True), max_width=500).add_to(temp_layer)
 
         # consolidate individual features back into the main layer
