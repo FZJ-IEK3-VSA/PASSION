@@ -36,7 +36,7 @@ SuperstructureSegmentation:
   stride: 512
   save_masks: True
   save_filtered: True
-  rooftop_background_class: 0
+  rooftop_background_class: 8
   polygon_simplification_distance: 6
   kernel_size: 7 # For morphological opening and closing
 
@@ -72,7 +72,7 @@ SuperstructureSegmentationTraining:
   val_folder: '/home/r-pueblas/rooftop-segmentation-datasets/data/RID/output/masks_superstructures_reviewed/val'
   output_folder: 'model'
   folder_name: 'pv-segmentation'
-  num_classes: 3
+  num_classes: 9
   batch_size: 8
   learning_rate: 0.00001
   n_epochs: 10
