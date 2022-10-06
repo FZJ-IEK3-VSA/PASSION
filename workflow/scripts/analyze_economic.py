@@ -16,13 +16,15 @@ with open(configfile, "r") as stream:
 technical_config = config.get('TechnicalAnalysis')
 economic_config = config.get('EconomicAnalysis')
 results_path = pathlib.Path(config.get('results_path'))
+zoom = config.get('ImageRetrieval').get('zoom')
+project_results_path = results_path / (f"{config.get('project_name')}-z{zoom}")
 
 input_folder = technical_config['output_folder']
-input_path = results_path / input_folder
+input_path = project_results_path / input_folder
 input_name = technical_config['file_name']
 
 output_folder = economic_config['output_folder']
-output_path = results_path / output_folder
+output_path = project_results_path / output_folder
 
 output_name = economic_config['file_name']
 

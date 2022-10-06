@@ -1,5 +1,6 @@
 
 results_path: workflow/output
+project_name: test
 
 ImageRetrieval:
   api_key: ''
@@ -28,6 +29,7 @@ ImageSegmentation:
   kernel_size: 7 # For morphological opening and closing
   # Does not apply to model:
   osm_request_interval: 30
+  osm_output_folder: 'segmentation/osm'
   
 SuperstructureSegmentation:
   output_folder: 'segmentation/superstructures'
@@ -50,8 +52,8 @@ RooftopAnalysis:
 TechnicalAnalysis:
   output_folder: 'technical'
   file_name: 'technical'
-  era5_path: '/storage/internal/data/gears/weather/ERA5/processed/4/8/5/2016'
-  sarah_path: '/storage/internal/data/gears/weather/SARAH/processed/4/8/5/2016'
+  era5_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/era5-like'
+  sarah_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/sarah-like'
   
 EconomicAnalysis:
   output_folder: 'economic'

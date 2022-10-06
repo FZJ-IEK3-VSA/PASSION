@@ -17,13 +17,14 @@ with open(configfile, "r") as stream:
 segmentation_config = config.get('SuperstructureSegmentation')
 image_retrieval_config = config.get('ImageRetrieval')
 results_path = pathlib.Path(config.get('results_path'))
-
+zoom = image_retrieval_config.get('zoom')
+project_results_path = results_path / (f"{config.get('project_name')}-z{zoom}")
 
 input_folder = image_retrieval_config['output_folder']
-input_path = results_path / input_folder
+input_path = project_results_path / input_folder
 
 output_folder = segmentation_config['output_folder']
-output_path = results_path / output_folder
+output_path = project_results_path / output_folder
 
 polygon_simplification_distance = segmentation_config.get('polygon_simplification_distance')
 polygon_simplification_distance = float(polygon_simplification_distance)

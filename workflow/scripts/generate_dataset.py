@@ -14,7 +14,6 @@ with open(configfile, "r") as stream:
         exit
 
 image_retrieval_config = config.get('ImageRetrieval')
-results_path = pathlib.Path(config.get('results_path'))
 
 api_key = image_retrieval_config.get('api_key')
 service = image_retrieval_config.get('service')
@@ -32,8 +31,9 @@ if shape:
     sf = shapefile.Reader(shape)
     shape = sf.shapes()[0]
 
+project_results_path = pathlib.Path(config.get('results_path')) / (f"{config.get('project_name')}-z{str(zoom)}")
 output_folder = image_retrieval_config['output_folder']
-output_path = results_path / output_folder
+output_path = project_results_path / output_folder
 
 passion.satellite.image_retrieval.generate_dataset(api_key, service, output_path,
                                     zoom = zoom, bbox=bbox, shapefile=shape)
