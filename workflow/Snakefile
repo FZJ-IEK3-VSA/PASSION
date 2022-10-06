@@ -41,7 +41,7 @@ def aggregate_input(wildcards):
     return expand(project_results + "/" + image_retrieval_output + "/{i}.png",
                   i=datasets_images_i)
 
-checkpoint segment_dataset:
+checkpoint segment_rooftop_dataset:
     input:
         aggregate_input,
         expand(results + '/' + segmentation_model_output)
@@ -51,10 +51,10 @@ checkpoint segment_dataset:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/segment_dataset.py --config workflow/config.yml
+        python workflow/scripts/segment_rooftop_dataset.py --config workflow/config.yml
         '''
 
-checkpoint segment_superstructures_dataset:
+checkpoint segment_superstructure_dataset:
     input:
         aggregate_input,
         expand(results + '/' + superstructure_segmentation_model_output)
@@ -64,23 +64,23 @@ checkpoint segment_superstructures_dataset:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/segment_superstructures_dataset.py --config workflow/config.yml
+        python workflow/scripts/segment_superstructure_dataset.py --config workflow/config.yml
         '''
 
 # input function for rule aggregate, return paths to all files produced by the checkpoint 'somestep'
-def aggregate_segment_input(wildcards):
-    checkpoint_output = checkpoints.segment_dataset.get(**wildcards).output[0]
+def aggregate_segment_rooftop_input(wildcards):
+    checkpoint_output = checkpoints.segment_rooftop_dataset.get(**wildcards).output[0]
     return expand(project_results + "/" + segmentation_output + "/{i}.png",
                   i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
 
 def aggregate_segment_superstructures_input(wildcards):
-    checkpoint_output = checkpoints.segment_superstructures_dataset.get(**wildcards).output[0]
+    checkpoint_output = checkpoints.segment_superstructure_dataset.get(**wildcards).output[0]
     return expand(project_results + "/" + superstructure_segmentation_output + "/{i}.png",
                   i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
 
 rule analyze_rooftops:
     input:
-        aggregate_segment_input,
+        aggregate_segment_rooftop_input,
         aggregate_segment_superstructures_input
     output:
         project_results + "/" + rooftops_output + '.csv'
