@@ -124,7 +124,7 @@ rule segmentation_training:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/train_segmentation.py --config workflow/config.yml
+        python workflow/scripts/train_rooftop_segmentation.py --config workflow/config.yml
         '''
 
 rule superstructure_segmentation_training:
