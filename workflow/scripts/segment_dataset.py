@@ -53,7 +53,6 @@ else:
     model_rel_path = segmentation_config['model_rel_path']
     model_path = results_path / model_rel_path
 
-    #model = tf.keras.models.load_model(str(model_path))
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     model = torch.load(str(model_path), map_location=torch.device(device))
 
