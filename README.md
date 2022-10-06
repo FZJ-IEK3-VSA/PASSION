@@ -36,17 +36,10 @@ conda activate passion
 
 Please take into account that the **environment needs to be activated** in order to run the project.
 
-For getting the satelite images, please retrieve an API_KEY from one of the providers (bing maps is recommended, from https://www.bingmapsportal.com/) and set it in the snakemake config file:
-
-`
-workflow/config.yml
-`
-
-The key should be specified as:
-
-`
+For getting the satelite images, please retrieve an API_KEY from one of the providers (bing maps is recommended, from https://www.bingmapsportal.com/) and set it in the snakemake config file (`workflow/config.yml`) as follows:
+```
 api_key: '<API_KEY>'
-`
+```
 
 ---
 
@@ -57,14 +50,27 @@ Each of the different steps will require different data files. You can run any o
 1. Satellite retrieval:
    * No additional data files are required. Only a valid API key for one of the satellite providers.
 2. Rooftop segmentation.
-   * The file `workflow/output/model/rooftop_segmentation.h5` is needed, and should have been directly downloaded when cloning the repository. Git-LFS is needed for the model to be properly downloaded.
+   * The model `workflow/output/model/rooftop-segmentation/model_best.pth` is needed, and should have been directly downloaded when cloning the repository. Git-LFS is needed for the model to be properly downloaded.
+   * The model `workflow/output/model/pv-segmentation/model_best.pth` is needed, and should have been directly downloaded when cloning the repository. Git-LFS is needed for the model to be properly downloaded.
 3. Section segmentation.
    * The file `workflow/output/tilt_distribution.pkl` is needed, and should have been directly downloaded when cloning the repository.
 4. Technical potential simulation:
-   * ERA5 dataset: WIP, external dependency
-   * SARAH dataset: WIP, external dependency
+   * A folder for ERA5 data processed in RESKit format is needed. A sample folder can be found in `https://github.com/FZJ-IEK3-VSA/RESKit/tree/master/reskit/_test/data/era5-like`.
+   * A folder for SARAH data processed in RESKit format is needed. A sample folder can be found in `https://github.com/FZJ-IEK3-VSA/RESKit/tree/master/reskit/_test/data/sarah-like`.
 5. Economic potential:
    * No additional data files are required.
+
+
+In order to use the sample weather datasets for technical and economic calculations, please follow these steps:
+1. Clone RESKit repository:
+   ```
+   $ git clone https://github.com/FZJ-IEK3-VSA/RESKit.git
+   ```
+2. Change the following properties in `workflow/config.yml` (please, substitute <RESKit_REPO> with the location of your previously cloned repository):
+   ```
+   era5_path: '<RESKit_REPO>/reskit/_test/data/era5-like' 
+   sarah_path: '<RESKit_REPO>/reskit/_test/data/sarah-like' 
+   ```
 
 ---
 
@@ -87,12 +93,14 @@ snakemake --gui
 * In order to run passion in a SLURM environment, run:
 
 ```
+snakemake --cores 1 --until generate_dataset       # only if SLURM do not have access to the internet
 snakemake --profile workflow/slurm
 ```
 
 To train the model, run the following argument after any of the above:
 ```
-snakemake [...] --until segmentation_training
+snakemake [<ONE OF THE PREVIOUS>] --until segmentation_training   # for the rooftop segmentation model
+snakemake [<ONE OF THE PREVIOUS>] --until superstructure_segmentation_training   # for the superstructure segmentation model
 ```
 
 ---
