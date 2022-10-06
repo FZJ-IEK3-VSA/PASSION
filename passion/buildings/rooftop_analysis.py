@@ -62,32 +62,33 @@ def generate_rooftops(predictions_path: pathlib.Path,
 
     class_list, rooftop_outlines = passion.util.shapes.get_image_rooftops_xy(img_mask)
     superstructure_class_list, superstructure_outlines = passion.util.shapes.get_image_rooftops_xy(superstructure_img_mask)
-    print(f'Number of rooftops: {len(rooftop_outlines)}')
-    print(f'Number of superstructures: {len(superstructure_outlines)}')
     
-    class_list, rooftop_outlines = tuple(zip(*[(c, poly) for (c, poly) in zip(class_list, rooftop_outlines) if not poly.is_empty]))
-    superstructure_class_list, superstructure_outlines = tuple(zip(*[(c, poly) for (c, poly) in zip(superstructure_class_list, superstructure_outlines) if not poly.is_empty]))
-    print(f'Number of rooftops after removing empty polygons: {len(rooftop_outlines)}')
-    print(f'Number of superstructures after removing empty polygons: {len(superstructure_outlines)}')
-
-    # Filter out inner polygons (holes)
-    filter_outlines = []
-    for i, r_a in enumerate(rooftop_outlines):
-      for j, r_b in enumerate(rooftop_outlines):
-        if i != j:
-          if r_a.contains(r_b):
-            filter_outlines.append(j)
-    filter_outlines = []
-    for i, r_a in enumerate(superstructure_outlines):
-      for j, r_b in enumerate(superstructure_outlines):
-        if i != j:
-          if r_a.contains(r_b):
-            filter_outlines.append(j)
-
-    class_list, rooftop_outlines = passion.util.shapes.filter_polygon_holes(class_list, rooftop_outlines)
-    superstructure_class_list, superstructure_outlines = passion.util.shapes.filter_polygon_holes(superstructure_class_list, superstructure_outlines)
-    print(f'Number of rooftops after filtering holes: {len(rooftop_outlines)}')
-    print(f'Number of superstructures after filtering holes: {len(superstructure_outlines)}')
+    print(f'Number of rooftops: {len(rooftop_outlines)}')
+    if rooftop_outlines:
+      class_list, rooftop_outlines = tuple(zip(*[(c, poly) for (c, poly) in zip(class_list, rooftop_outlines) if not poly.is_empty]))
+      print(f'Number of rooftops after removing empty polygons: {len(rooftop_outlines)}')
+      # Filter out inner polygons (holes)
+      filter_outlines = []
+      for i, r_a in enumerate(rooftop_outlines):
+        for j, r_b in enumerate(rooftop_outlines):
+          if i != j:
+            if r_a.contains(r_b):
+              filter_outlines.append(j)
+      class_list, rooftop_outlines = passion.util.shapes.filter_polygon_holes(class_list, rooftop_outlines)
+      print(f'Number of rooftops after filtering holes: {len(rooftop_outlines)}')
+    
+    print(f'Number of superstructures: {len(superstructure_outlines)}')
+    if superstructure_outlines:
+      superstructure_class_list, superstructure_outlines = tuple(zip(*[(c, poly) for (c, poly) in zip(superstructure_class_list, superstructure_outlines) if not poly.is_empty]))
+      print(f'Number of superstructures after removing empty polygons: {len(superstructure_outlines)}')
+      filter_outlines = []
+      for i, r_a in enumerate(superstructure_outlines):
+        for j, r_b in enumerate(superstructure_outlines):
+          if i != j:
+            if r_a.contains(r_b):
+              filter_outlines.append(j)
+      superstructure_class_list, superstructure_outlines = passion.util.shapes.filter_polygon_holes(superstructure_class_list, superstructure_outlines)
+      print(f'Number of superstructures after filtering holes: {len(superstructure_outlines)}')
 
     # rooftop_outline is relative to image!
     for r_id, rooftop_outline in enumerate(rooftop_outlines):
