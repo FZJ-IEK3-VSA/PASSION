@@ -5,7 +5,7 @@ __pycache__/
 PASSION.egg-info/
 build/
 dist/
-test/temp/
+test/tmp/
 .snakemake
 gurobi.log
 output
