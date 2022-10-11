@@ -6,32 +6,13 @@ import shapely.wkt
 
 import passion.util
 
-class PVModule():
-  '''Object representation of a Photovoltaic module.
-  Properties of the panel that are interesting for the
-  analysis are the module's capacity, area and price.
-  '''
-  def __init__(self, name, capacity, size, spacing_factor):
-    self.name = name
-    self.capacity = capacity # kW
-    self.spacing_factor = spacing_factor # x times the panel size
-    self.size = size # meters
-    self.price = 350 # euros
-
-DEFAULT_PVMODULE = PVModule('LG370Q1C-A5', 370, (1.7,1.016), 2)
-DEFAULT_RESKIT_MODULE = 'LG Electronics LG370Q1C-A5'
-
-def set_pv_module(module: PVModule):
-  '''Sets the default module for the analysis as a new PVModule.'''
-  DEFAULT_PVMODULE = module
-  return
-
 def generate_technical(input_path: pathlib.Path,
                        input_filename: str,
                        output_path: pathlib.Path,
                        output_filename: str,
                        era5_path: pathlib.Path,
-                       sarah_path: pathlib.Path
+                       sarah_path: pathlib.Path,
+                       pv_panel_properties: dict
 ):
   '''Generates a CSV file containing the technical potential of the input sections.
 
@@ -67,6 +48,16 @@ def generate_technical(input_path: pathlib.Path,
   '''
   output_path.mkdir(parents=True, exist_ok=True)
 
+  pv_model_id = pv_panel_properties.get('id')
+  pv_model_name = pv_panel_properties.get('name')
+  pv_model_capacity = pv_panel_properties.get('capacity')
+  pv_model_width = pv_panel_properties.get('width')
+  pv_model_height = pv_panel_properties.get('height')
+  pv_model_price = pv_panel_properties.get('price')
+  pv_spacing_factor = pv_panel_properties.get('spacing_factor')
+  pv_border_spacing = pv_panel_properties.get('border_spacing')
+  pv_n_offset = pv_panel_properties.get('n_offset')
+
   placements = pd.DataFrame(columns=[
                       'lon', 'lat', 'elev', 'capacity', 'tilt', 'azimuth', 'area',
                       'flat', 'outline_latlon', 'outline_xy', 'original_image_name',
@@ -84,25 +75,26 @@ def generate_technical(input_path: pathlib.Path,
     _latlon, zoom = passion.util.gis.extract_filename(original_image_name.replace('.png', ''))
     gr = passion.util.gis.ground_resolution(lat, zoom)
     
-    pv_size_pixels = (DEFAULT_PVMODULE.size[0] / gr, DEFAULT_PVMODULE.size[1] / gr)
+    pv_size_pixels = (pv_model_width / gr, pv_model_height / gr)
+    pv_border_spacing_pixels = pv_border_spacing / gr
     layout_multipolygon = passion.util.shapes.get_panel_layout(outline_xy_poly,
                                            pv_size_pixels,
                                            azimuth,
-                                           spacing_factor = DEFAULT_PVMODULE.spacing_factor,
-                                           border_spacing = 8,
-                                           n_offset = 5)
+                                           spacing_factor = pv_spacing_factor,
+                                           border_spacing = pv_border_spacing_pixels,
+                                           n_offset = pv_n_offset)
     outline_xy = layout_multipolygon.wkt
     n_panels = len(layout_multipolygon.geoms)
     if n_panels > 0:
       # Necessary for RESKit:
-      section['capacity'] = DEFAULT_PVMODULE.capacity * n_panels
+      section['capacity'] = pv_model_capacity * n_panels
       capacity = float(section['capacity'])
       tilt = float(section['tilt_angle'])
       section['elevation'] = 204.0 #TODO: request elevation from 'https://api.opentopodata.org/v1/'
       elevation = section['elevation']
 
       # Not necessary for RESKit:
-      area = section['area']
+      area = n_panels * pv_model_width * pv_model_height
       flat = section['flat']
 
       # Convert panel outline into latlon outline, accounting for the pixel offset
@@ -119,13 +111,13 @@ def generate_technical(input_path: pathlib.Path,
       outline_latlon = outline_latlon.wkt
 
       rooftop_image_name = section['rooftop_image_name']
-      modules_cost = float(DEFAULT_PVMODULE.price * n_panels)
+      modules_cost = float(pv_model_price * n_panels)
 
       placements.loc['S'+str(i)] = [ lon, lat, elevation, capacity, tilt, azimuth, area,
                                     flat, outline_latlon, outline_xy, original_image_name,
-                                    rooftop_image_name, n_panels, modules_cost ]
+                                    rooftop_image_name, float(n_panels), modules_cost ]
 
-  xds = rk.solar.openfield_pv_sarah_unvalidated(placements, sarah_path, era5_path, module=DEFAULT_RESKIT_MODULE)
+  xds = rk.solar.openfield_pv_sarah_unvalidated(placements, sarah_path, era5_path, module=pv_model_id)
 
   sections = []
   for i,j in enumerate(xds.location):
@@ -142,6 +134,7 @@ def generate_technical(input_path: pathlib.Path,
     outline_xy = passion.util.io.safe_eval((xds.outline_xy[j]).values)
     original_image_name = passion.util.io.safe_eval((xds.original_image_name[j]).values)
     rooftop_image_name = passion.util.io.safe_eval((xds.rooftop_image_name[j]).values)
+    n_panels = passion.util.io.safe_eval((xds.n_panels[j]).values)
     modules_cost = passion.util.io.safe_eval((xds.modules_cost[j]).values)
     
     section = {
@@ -158,6 +151,7 @@ def generate_technical(input_path: pathlib.Path,
         'outline_xy': outline_xy,
         'rooftop_image_name': rooftop_image_name,
         'original_image_name': original_image_name,
+        'n_panels': n_panels,
         'modules_cost': modules_cost
     }
 

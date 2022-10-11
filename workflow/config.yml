@@ -52,8 +52,19 @@ RooftopAnalysis:
 TechnicalAnalysis:
   output_folder: 'technical'
   file_name: 'technical'
+  #era5_path: '/storage/internal/data/gears/weather/ERA5/processed/4/8/5/2016'
   era5_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/era5-like'
+  #sarah_path: '/storage/internal/data/gears/weather/SARAH/processed/4/8/5/2016'
   sarah_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/sarah-like'
+  pv_model_id: 'LG Electronics LG370Q1C-A5' # RESKit identifier
+  pv_model_name: 'LG370Q1C-A5'
+  pv_model_capacity: 370 # kW
+  pv_model_width: 1.7 # meters
+  pv_model_height: 1.016 # meters
+  pv_model_price: 350 # euros
+  pv_spacing_factor: 1.3
+  pv_border_spacing: 2 # meters
+  pv_n_offset: 5
   
 EconomicAnalysis:
   output_folder: 'economic'
