@@ -103,6 +103,8 @@ snakemake [<ONE OF THE PREVIOUS>] --until segmentation_training   # for the roof
 snakemake [<ONE OF THE PREVIOUS>] --until superstructure_segmentation_training   # for the superstructure segmentation model
 ```
 
+![Click here to see the rule diagram](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/-/blob/master/assets/rules.png)
+
 ---
 
 ## Visualizing results (very early stages)
