@@ -25,7 +25,7 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 ### Prerequisites
 
 Given the model size, this repository requires git LFS. You can install it in your system with the following guide:
-http://arfc.github.io/manual/guides/git-lfs. Please make sure that the model under `workflow/output/model/rooftop_segmentation.h5` is properly downloaded before moving on.
+http://arfc.github.io/manual/guides/git-lfs. Please make sure that the models under `workflow/output/model/rooftop-segmentation` and `workflow/output/model/pv-segmentation` are properly downloaded before moving on.
 
 To set the project up and running any of the steps, you need to run in the root folder:
 
@@ -93,7 +93,7 @@ snakemake --gui
 * In order to run passion in a SLURM environment, run:
 
 ```
-snakemake --cores 1 --until generate_dataset       # only if SLURM do not have access to the internet
+snakemake --cores 1 --until generate_dataset       # only if SLURM does not have access to the internet
 snakemake --profile workflow/slurm
 ```
 
