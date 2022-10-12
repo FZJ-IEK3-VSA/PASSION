@@ -41,7 +41,7 @@ def aggregate_input(wildcards):
     return expand(project_results + "/" + image_retrieval_output + "/{i}.png",
                   i=datasets_images_i)
 
-checkpoint segment_rooftop_dataset:
+checkpoint segment_rooftops:
     input:
         aggregate_input,
         expand(results + '/' + segmentation_model_output)
@@ -51,10 +51,10 @@ checkpoint segment_rooftop_dataset:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/segment_rooftop_dataset.py --config workflow/config.yml
+        python workflow/scripts/segment_rooftops.py --config workflow/config.yml
         '''
 
-checkpoint segment_superstructure_dataset:
+checkpoint segment_superstructures:
     input:
         aggregate_input,
         expand(results + '/' + superstructure_segmentation_model_output)
@@ -64,17 +64,17 @@ checkpoint segment_superstructure_dataset:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/segment_superstructure_dataset.py --config workflow/config.yml
+        python workflow/scripts/segment_superstructures.py --config workflow/config.yml
         '''
 
 # input function for rule aggregate, return paths to all files produced by the checkpoint 'somestep'
 def aggregate_segment_rooftop_input(wildcards):
-    checkpoint_output = checkpoints.segment_rooftop_dataset.get(**wildcards).output[0]
+    checkpoint_output = checkpoints.segment_rooftops.get(**wildcards).output[0]
     return expand(project_results + "/" + segmentation_output + "/{i}.png",
                   i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
 
 def aggregate_segment_superstructures_input(wildcards):
-    checkpoint_output = checkpoints.segment_superstructure_dataset.get(**wildcards).output[0]
+    checkpoint_output = checkpoints.segment_superstructures.get(**wildcards).output[0]
     return expand(project_results + "/" + superstructure_segmentation_output + "/{i}.png",
                   i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
 
