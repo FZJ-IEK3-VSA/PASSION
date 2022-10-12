@@ -1,7 +1,7 @@
 """ 
     Start the flask server by running:
 
-        $ python server.py
+        $ python sample_server.py
 
     And then head to http://127.0.0.1:5000/ in your browser to see the map displayed
 """
@@ -18,6 +18,7 @@ import math
 from copy import deepcopy
 
 import folium
+from folium.plugins import FastMarkerCluster
 import branca
 from util import rooftop_popup_html, create_gradient_from_column, open_csv_results
 
@@ -41,12 +42,14 @@ def index():
         overlay = False,
         control = True
        ).add_to(folium_map)
+
+    results_path = pathlib.Path('workflow/output/test-z19')
     
-    outlines = open_csv_results(pathlib.Path('workflow/output/rooftops/'), 'rooftops.csv')
+    outlines = open_csv_results(results_path / 'rooftops', 'rooftops.csv')
     create_gradient_from_column(outlines, 'area', '#96BDC6', '#96BDC6')
     add_outlines_layer(folium_map, outlines, 'rooftops', '#96BDC6', 
                         ['area', 'azimuth', 'tilt_angle', 'center_lat', 'center_lon', 'color'])
-    superstructures = open_csv_results(pathlib.Path('workflow/output/rooftops/'), 'superstructures.csv')
+    superstructures = open_csv_results(results_path / 'rooftops', 'superstructures.csv')
 
     panels = []
     obstacles = []
@@ -60,18 +63,46 @@ def index():
     add_outlines_layer(folium_map, obstacles, 'obstacles', '#C68E17',
                         ['area', 'color'])
     
-    outlines = open_csv_results(pathlib.Path('workflow/output/technical/'), 'technical.csv')
+    outlines = open_csv_results(results_path / 'technical', 'technical.csv')
     create_gradient_from_column(outlines, 'yearly_gen', '#ff0000', '#00ff00')
     add_outlines_layer(folium_map, outlines, 'technical', '#E3B505', 
-                        ['area', 'center_lat', 'center_lon', 'yearly_gen', 'capacity', 'modules_cost', 'color'])
+                        ['area', 'azimuth', 'tilt', 'yearly_gen', 'capacity', 'modules_cost', 'color'])
     
-    outlines = open_csv_results(pathlib.Path('workflow/output/economic/'), 'lcoe.csv')
+    outlines = open_csv_results(results_path / 'economic', 'lcoe.csv')
     create_gradient_from_column(outlines, 'lcoe_eur_MWh', '#00ff00', '#ff0000')
     add_outlines_layer(folium_map, outlines, 'economic', '#81F499', 
-                        ['area', 'center_lat', 'center_lon', 'lcoe_eur_MWh', 'color'])
+                        ['area', 'azimuth', 'tilt', 'lcoe_eur_MWh', 'color'])
     
     folium.LayerControl().add_to(folium_map)
-    return folium_map._repr_html_()
+
+    # Total generation analysis
+    total_gen = 0
+    total_area = 0
+    total_panels = 0
+    for outline in outlines:
+        total_gen += outline['yearly_gen']
+        total_area += outline['area']
+        total_panels += outline['n_panels']
+    
+    total_existing = 0
+    for panel in panels:
+        total_existing += panel['area']
+    
+    html_out = f'''
+        <h1>
+            Total potential generation: {int(total_gen/1000)} kWh
+            <br/>
+            Total potential panel area: {int(total_area)} m^2
+            <br/>
+            Total potential number of panels: {int(total_panels)}
+            <br/>
+            Total existing detected panel area: {int(total_existing)} m^2
+        </h2>
+    '''
+
+    html_out += folium_map._repr_html_()
+
+    return html_out
 
 
 def add_outlines_layer(map, outlines, name, color, display_properties=[]):
