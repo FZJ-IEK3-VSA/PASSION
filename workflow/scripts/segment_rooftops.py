@@ -54,6 +54,7 @@ else:
     model_path = results_path / model_rel_path
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print(f'Using torch device: {device}')
     model = torch.load(str(model_path), map_location=torch.device(device))
 
     passion.segmentation.prediction.segment_dataset(
