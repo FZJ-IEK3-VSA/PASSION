@@ -1,6 +1,7 @@
 cluster: mkdir -p logs/{rule} &&
   sbatch
   --partition={resources.partition}
+  --gres=gpu:1
   --cpus-per-task={resources.threads}
   --mem={resources.mem_mb}
   --job-name=smk-{rule}-{wildcards}
