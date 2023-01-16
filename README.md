@@ -24,8 +24,8 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 
 ### Prerequisites
 
-Given the model size, this repository requires git LFS. You can install it in your system with the following guide:
-http://arfc.github.io/manual/guides/git-lfs. Please make sure that the models under `workflow/output/model/rooftop-segmentation` and `workflow/output/model/pv-segmentation` are properly downloaded before moving on.
+Given the size of the models, this repository requires git LFS. You can install it in your system with the following guide:
+http://arfc.github.io/manual/guides/git-lfs. Please make sure that the models under `workflow/output/model/rooftop-segmentation`, `workflow/output/model/section-segmentation` and `workflow/output/model/pv-segmentation` are properly downloaded before moving on.
 
 To set the project up and running any of the steps, you need to run in the root folder:
 
@@ -51,6 +51,7 @@ Each of the different steps will require different data files. You can run any o
    * No additional data files are required. Only a valid API key for one of the satellite providers.
 2. Rooftop segmentation.
    * The model `workflow/output/model/rooftop-segmentation/model_best.pth` is needed, and should have been directly downloaded when cloning the repository. Git-LFS is needed for the model to be properly downloaded.
+   * The model `workflow/output/model/section-segmentation/model_best.pth` is needed, and should have been directly downloaded when cloning the repository. Git-LFS is needed for the model to be properly downloaded.
    * The model `workflow/output/model/pv-segmentation/model_best.pth` is needed, and should have been directly downloaded when cloning the repository. Git-LFS is needed for the model to be properly downloaded.
 3. Section segmentation.
    * The file `workflow/output/tilt_distribution.pkl` is needed, and should have been directly downloaded when cloning the repository.
@@ -99,8 +100,9 @@ snakemake --profile workflow/slurm
 
 To train the model, run the following argument after any of the above:
 ```
-snakemake [<ONE OF THE PREVIOUS>] --until segmentation_training   # for the rooftop segmentation model
-snakemake [<ONE OF THE PREVIOUS>] --until superstructure_segmentation_training   # for the superstructure segmentation model
+snakemake [<ONE OF THE PREVIOUS>] --until train_rooftop_segmentation   # for the rooftop segmentation model
+snakemake [<ONE OF THE PREVIOUS>] --until train_section_segmentation   # for the section segmentation model
+snakemake [<ONE OF THE PREVIOUS>] --until train_superstructure_segmentation   # for the superstructure segmentation model
 ```
 
 ![Click here to see the rule diagram](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/-/blob/master/assets/rules.png)
@@ -112,13 +114,13 @@ snakemake [<ONE OF THE PREVIOUS>] --until superstructure_segmentation_training  
 If you want to visualize the results of your pipeline, a local GUI can be instantiated as:
 
 `
-python gui/sample_server.py
+python gui/netcdf_visualizer.py
 `
 
 When the server is running, you can access the GUI entering the following local address in your browser:
 
 `
-http://127.0.0.1:5000/
+http://127.0.0.1:8082/
 `
 
 
