@@ -1,4 +1,4 @@
-name: passion-dev
+name: passion-test
 channels:
   - conda-forge
   - defaults
@@ -51,4 +51,7 @@ dependencies:
     - torch==1.13.0
     - torchvision
     - torchmetrics
+    - tensorboard==2.11.0
+    - rasterio==1.3.4
+    - utm==0.7.0
     - -e .

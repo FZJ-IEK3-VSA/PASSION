@@ -14,14 +14,17 @@ with open(configfile, "r") as stream:
         exit
 
 rooftop_config = config.get('RooftopAnalysis')
-segmentation_config = config.get('ImageSegmentation')
+rooftop_segmentation_config = config.get('RooftopSegmentation')
+section_segmentation_config = config.get('SectionSegmentation')
 superstructure_segmentation_config = config.get('SuperstructureSegmentation')
 results_path = pathlib.Path(config.get('results_path'))
 zoom = config.get('ImageRetrieval').get('zoom')
 project_results_path = results_path / (f"{config.get('project_name')}-z{zoom}")
 
-input_folder = segmentation_config['output_folder']
-input_path = project_results_path / input_folder
+rooftop_input_folder = rooftop_segmentation_config['output_folder']
+rooftop_input_path = project_results_path / rooftop_input_folder
+section_input_folder = section_segmentation_config['output_folder']
+section_input_path = project_results_path / section_input_folder
 superstructure_input_folder = superstructure_segmentation_config['output_folder']
 superstructure_input_path = project_results_path / superstructure_input_folder
 
@@ -36,7 +39,8 @@ tilt_distribution_path = results_path / tilt_distribution_rel_path
 
 minimum_area = int(rooftop_config.get('minimum_area'))
 
-passion.buildings.rooftop_analysis.generate_rooftops(input_path,
+passion.buildings.building_analysis.analyze_rooftops(rooftop_input_path,
+                                                     section_input_path,
                                                      superstructure_input_path,
                                                      output_path,
                                                      output_name,

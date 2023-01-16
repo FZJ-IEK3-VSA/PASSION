@@ -6,9 +6,12 @@ from enum import Enum
 import tqdm
 import shapely.geometry
 import PIL
+import rasterio
 
 import torch
 import torchvision
+
+from typing import List
 
 import passion.util
 
@@ -35,22 +38,32 @@ def segment_dataset(input_path: pathlib.Path,
   '''
   output_path.mkdir(parents=True, exist_ok=True)
   
-  paths = list(input_path.glob('*.png'))
+  paths = list(input_path.glob('*.tif'))
   pbar = tqdm.tqdm(paths)
   for img_path in pbar:
-    image = passion.util.io.load_image(img_path)
+    src = rasterio.open(img_path)
+    r = src.read(1)
+    g = src.read(2)
+    b = src.read(3)
+    image = np.dstack((b,g,r))
 
     image = preprocess_input(image)
 
     seg_image = segment_img(image, model, tile_size, stride, background_class)
 
-    seg_image = postprocess_output(seg_image, polygon_simplification_distance, kernel_size)
+    #seg_image = postprocess_output(seg_image, polygon_simplification_distance, kernel_size)
     
-    if save_masks: passion.util.io.save_image(seg_image, output_path, img_path.stem + '_MASK' + '.png')
+    seg_image = seg_image[np.newaxis, ...]
+    channels, height, width = seg_image.shape
+    new_dataset = rasterio.open(str(output_path / (img_path.stem + '_MASK.tif')), 'w', driver='GTiff',
+                                        height = height, width = width,
+                                        count=1, dtype=str(seg_image.dtype),
+                                        crs=src.crs,
+                                        transform=src.transform)
+    new_dataset.update_tags(**src.tags())
+    new_dataset.write(seg_image)
+    new_dataset.close()
 
-    if save_filtered:
-      filtered_image = passion.util.shapes.filter_image(image, seg_image)
-      passion.util.io.save_image(filtered_image, output_path, img_path.stem + '_FILTERED' + '.png')
   return
 
 def segment_img(image: np.ndarray,
@@ -232,7 +245,7 @@ def preprocess_input(image: np.ndarray):
   '''
   return image
 
-def postprocess_output(image: np.ndarray, simplification_distance: float = 8, kernel_size: int = 9):
+def postprocess_output(image: np.ndarray, simplification_distance: float = 8, kernel_size: int = 9, background_class: int = 0):
   '''Postprocessing made to the numpy image after performing segmentation.
   Can be redefined with a custom function as:
   prediction.postprocess_output = custom_postprocess_function
@@ -241,7 +254,7 @@ def postprocess_output(image: np.ndarray, simplification_distance: float = 8, ke
 
   poly_list = []
   class_list = []
-  seg_classes = np.unique(image)[np.unique(image) != 0]
+  seg_classes = np.unique(image)[np.unique(image) != background_class]
   for seg_class in seg_classes:
     image_class = image.copy()
 

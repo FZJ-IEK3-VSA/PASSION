@@ -13,7 +13,7 @@ with open(configfile, "r") as stream:
         print(exc)
         exit
 
-training_config = config.get('SuperstructureSegmentationTraining')
+training_config = config.get('SectionSegmentationTraining')
 results_path = pathlib.Path(config.get('results_path'))
 
 train_path = pathlib.Path(training_config['train_folder'])

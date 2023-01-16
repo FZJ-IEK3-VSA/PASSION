@@ -3,26 +3,47 @@ configfile: 'workflow/config.yml'
 results = config['results_path']
 project_results = f"{results}/{config['project_name']}-z{config['ImageRetrieval']['zoom']}"
 image_retrieval_output = config['ImageRetrieval']['output_folder']
-segmentation_output = config['ImageSegmentation']['output_folder']
+
+rooftop_segmentation_output = config['RooftopSegmentation']['output_folder']
+section_segmentation_output = config['SectionSegmentation']['output_folder']
 superstructure_segmentation_output = config['SuperstructureSegmentation']['output_folder']
+
 rooftops_folder = config['RooftopAnalysis']['output_folder']
 rooftops_output = rooftops_folder + '/' + config['RooftopAnalysis']['file_name']
+
 technical_folder = config['TechnicalAnalysis']['output_folder']
 technical_output = technical_folder + '/' + config['TechnicalAnalysis']['file_name']
+
 economic_folder = config['EconomicAnalysis']['output_folder']
 economic_output = economic_folder + '/' + config['EconomicAnalysis']['file_name']
 
-segmentation_dataset_folder = config['RooftopSegmentationTraining']['train_folder']
-segmentation_model_folder = config['RooftopSegmentationTraining']['output_folder']
-segmentation_model_output = segmentation_model_folder + '/' + config['RooftopSegmentationTraining']['folder_name']
+rooftop_segmentation_dataset_folder = config['RooftopSegmentationTraining']['train_folder']
+rooftop_segmentation_model_folder = config['RooftopSegmentationTraining']['output_folder']
+rooftop_segmentation_model_output = rooftop_segmentation_model_folder + \
+                                    '/' + \
+                                    config['RooftopSegmentationTraining']['folder_name'] + \
+                                    '/' + \
+                                    config['RooftopSegmentationTraining']['model_name']
+
+section_segmentation_dataset_folder = config['SectionSegmentationTraining']['train_folder']
+section_segmentation_model_folder = config['SectionSegmentationTraining']['output_folder']
+section_segmentation_model_output = section_segmentation_model_folder + \
+                                    '/' + \
+                                    config['SectionSegmentationTraining']['folder_name'] + \
+                                    '/' + \
+                                    config['SectionSegmentationTraining']['model_name']
 
 superstructure_segmentation_dataset_folder = config['SuperstructureSegmentationTraining']['train_folder']
 superstructure_segmentation_model_folder = config['SuperstructureSegmentationTraining']['output_folder']
-superstructure_segmentation_model_output = superstructure_segmentation_model_folder + '/' + config['SuperstructureSegmentationTraining']['folder_name']
+superstructure_segmentation_model_output = superstructure_segmentation_model_folder + \
+                                    '/' + \
+                                    config['SuperstructureSegmentationTraining']['folder_name'] + \
+                                    '/' + \
+                                    config['SuperstructureSegmentationTraining']['model_name']
 
 rule all:
     input:
-        project_results + "/" + economic_output + '.csv'
+        project_results + "/" + economic_output + '.nc'
 
 checkpoint generate_dataset:
     output:
@@ -37,16 +58,16 @@ checkpoint generate_dataset:
 # input function for rule aggregate, return paths to all files produced by the checkpoint 'somestep'
 def aggregate_input(wildcards):
     datasets_images = checkpoints.generate_dataset.get(**wildcards).output[0]
-    datasets_images_i = glob_wildcards(os.path.join(datasets_images, "{i}.png")).i
-    return expand(project_results + "/" + image_retrieval_output + "/{i}.png",
+    datasets_images_i = glob_wildcards(os.path.join(datasets_images, "{i}.tif")).i
+    return expand(project_results + "/" + image_retrieval_output + "/{i}.tif",
                   i=datasets_images_i)
 
 checkpoint segment_rooftops:
     input:
         aggregate_input,
-        expand(results + '/' + segmentation_model_output)
+        results + '/' + rooftop_segmentation_model_output
     output:
-        directory(project_results + "/" + segmentation_output)
+        directory(project_results + "/" + rooftop_segmentation_output)
     conda:
         '../requirements.yml'
     shell:
@@ -54,10 +75,23 @@ checkpoint segment_rooftops:
         python workflow/scripts/segment_rooftops.py --config workflow/config.yml
         '''
 
+checkpoint segment_sections:
+    input:
+        aggregate_input,
+        results + '/' + section_segmentation_model_output
+    output:
+        directory(project_results + "/" + section_segmentation_output)
+    conda:
+        '../requirements.yml'
+    shell:
+        '''
+        python workflow/scripts/segment_sections.py --config workflow/config.yml
+        '''
+
 checkpoint segment_superstructures:
     input:
         aggregate_input,
-        expand(results + '/' + superstructure_segmentation_model_output)
+        results + '/' + superstructure_segmentation_model_output
     output:
         directory(project_results + "/" + superstructure_segmentation_output)
     conda:
@@ -67,23 +101,28 @@ checkpoint segment_superstructures:
         python workflow/scripts/segment_superstructures.py --config workflow/config.yml
         '''
 
-# input function for rule aggregate, return paths to all files produced by the checkpoint 'somestep'
 def aggregate_segment_rooftop_input(wildcards):
     checkpoint_output = checkpoints.segment_rooftops.get(**wildcards).output[0]
-    return expand(project_results + "/" + segmentation_output + "/{i}.png",
-                  i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
+    return expand(project_results + "/" + rooftop_segmentation_output + "/{i}.tif",
+                  i=glob_wildcards(os.path.join(checkpoint_output, "{i}.tif")).i)
+
+def aggregate_segment_section_input(wildcards):
+    checkpoint_output = checkpoints.segment_sections.get(**wildcards).output[0]
+    return expand(project_results + "/" + section_segmentation_output + "/{i}.tif",
+                  i=glob_wildcards(os.path.join(checkpoint_output, "{i}.tif")).i)
 
 def aggregate_segment_superstructures_input(wildcards):
     checkpoint_output = checkpoints.segment_superstructures.get(**wildcards).output[0]
-    return expand(project_results + "/" + superstructure_segmentation_output + "/{i}.png",
-                  i=glob_wildcards(os.path.join(checkpoint_output, "{i}.png")).i)
+    return expand(project_results + "/" + superstructure_segmentation_output + "/{i}.tif",
+                  i=glob_wildcards(os.path.join(checkpoint_output, "{i}.tif")).i)
 
 rule analyze_rooftops:
     input:
         aggregate_segment_rooftop_input,
+        aggregate_segment_section_input,
         aggregate_segment_superstructures_input
     output:
-        project_results + "/" + rooftops_output + '.csv'
+        project_results + "/" + rooftops_output + '.nc'
     conda:
         '../requirements.yml'
     shell:
@@ -93,9 +132,9 @@ rule analyze_rooftops:
 
 rule analyze_technical:
     input:
-        project_results + "/" + rooftops_output + '.csv'
+        project_results + "/" + rooftops_output + '.nc'
     output:
-        project_results + "/" + technical_output + '.csv'
+        project_results + "/" + technical_output + '.nc'
     conda:
         '../requirements.yml'
     shell:
@@ -105,9 +144,9 @@ rule analyze_technical:
                 
 rule analyze_economic:
     input:
-        project_results + "/" + technical_output + '.csv'
+        project_results + "/" + technical_output + '.nc'
     output:
-        project_results + "/" + economic_output + '.csv'
+        project_results + "/" + economic_output + '.nc'
     conda:
         '../requirements.yml'
     shell:
@@ -115,11 +154,11 @@ rule analyze_economic:
         python workflow/scripts/analyze_economic.py --config workflow/config.yml
         '''
 
-rule segmentation_training:
+rule train_rooftop_segmentation:
     input:
-        expand(segmentation_dataset_folder)
+        expand(rooftop_segmentation_dataset_folder)
     output:
-        directory(results + '/' + segmentation_model_output)
+        results + '/' + rooftop_segmentation_model_output
     conda:
         '../requirements.yml'
     shell:
@@ -127,11 +166,23 @@ rule segmentation_training:
         python workflow/scripts/train_rooftop_segmentation.py --config workflow/config.yml
         '''
 
-rule superstructure_segmentation_training:
+rule train_section_segmentation:
+    input:
+        expand(section_segmentation_dataset_folder)
+    output:
+        results + '/' + section_segmentation_model_output
+    conda:
+        '../requirements.yml'
+    shell:
+        '''
+        python workflow/scripts/train_section_segmentation.py --config workflow/config.yml
+        '''
+
+rule train_superstructure_segmentation:
     input:
         expand(superstructure_segmentation_dataset_folder)
     output:
-        directory(results + '/' + superstructure_segmentation_model_output)
+        results + '/' + superstructure_segmentation_model_output
     conda:
         '../requirements.yml'
     shell:

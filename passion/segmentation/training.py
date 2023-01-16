@@ -9,6 +9,7 @@ import torchmetrics
 import os
 import time
 from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 from passion.segmentation import models
 
@@ -47,6 +48,7 @@ class SegmentationDataset(torch.utils.data.Dataset):
 def train_model(train_data_path: pathlib.Path,
                 val_data_path: pathlib.Path,
                 model_output_path: pathlib.Path,
+                model_name: str,
                 num_classes: int = 18,
                 batch_size: int = 1,
                 learning_rate: float = 0.00001,
@@ -81,10 +83,11 @@ def train_model(train_data_path: pathlib.Path,
   val_loader = torch.utils.data.DataLoader(val_dataset, shuffle=False,
     batch_size=batch_size, pin_memory=PIN_MEMORY,
     num_workers=os.cpu_count())
-  
+ 
   focal_loss = torch.hub.load(
-    'adeelh/pytorch-multi-class-focal-loss',
+    'passion/segmentation/pytorch-multi-class-focal-loss',
     model='focal_loss',
+    source='local',
     alpha=None,
     gamma=2,
     reduction='mean',
@@ -106,11 +109,16 @@ def train_model(train_data_path: pathlib.Path,
 
   best_val_score = 0.0
 
+  # Tensorboard writer
+  tensorboard_path = pathlib.Path(model_output_path / (model_name.split('.')[0]))
+  model_output_path.mkdir(parents=True, exist_ok=True)
+  writer = SummaryWriter(log_dir=str(tensorboard_path))
+
   # loop over epochs
   print("[INFO] training the network...")
   start_time = time.time()
   for e in tqdm(range(n_epochs)):
-    confmat = torchmetrics.ConfusionMatrix(num_classes=num_classes).to(DEVICE)
+    confmat = torchmetrics.ConfusionMatrix(task='multiclass',num_classes=num_classes).to(DEVICE)
     cm = torch.zeros((num_classes,num_classes)).to(DEVICE)
     # set the model in training mode
     unet.train()
@@ -119,7 +127,7 @@ def train_model(train_data_path: pathlib.Path,
     total_val_loss = 0
     total_correct = 0
     total = 0
-    jaccard = torchmetrics.JaccardIndex(num_classes=num_classes).to(DEVICE)
+    jaccard = torchmetrics.JaccardIndex(task='multiclass', num_classes=num_classes).to(DEVICE)
     total_val, total_val_correct = 0, 0
     # loop over the training set
     for (i, (x, y)) in enumerate(train_loader):
@@ -153,12 +161,13 @@ def train_model(train_data_path: pathlib.Path,
       cm += confmat(pred, y)
 
     train_iou = intersection_over_union(cm.cpu().detach().numpy())
+    mean_train_iou = np.mean(train_iou)
     print('Train Class IOU', train_iou)
-    print('Train Mean Class IOU:{}'.format(np.mean(train_iou)) )
+    print('Train Mean Class IOU:{}'.format(mean_train_iou))
 
     # switch off autograd
     with torch.no_grad():
-      confmat = torchmetrics.ConfusionMatrix(num_classes=num_classes).to(DEVICE)
+      confmat = torchmetrics.ConfusionMatrix(task='multiclass',num_classes=num_classes).to(DEVICE)
       cm = torch.zeros((num_classes,num_classes)).to(DEVICE)
       # set the model in evaluation mode
       unet.eval()
@@ -196,13 +205,20 @@ def train_model(train_data_path: pathlib.Path,
       if(mean_val_iou > best_val_score):
         print('Better Model Found: {} > {}'.format(mean_val_iou, best_val_score))
         best_val_score = mean_val_iou
-        torch.save(unet, model_output_path / 'model_best.pth')
+        torch.save(unet, model_output_path / model_name)
   
     # calculate the average training and validation loss
     avg_train_loss = total_train_loss / train_steps
     avg_val_loss = total_val_loss / val_steps
     avg_train_acc = total_correct / total
     avg_val_acc = total_val_correct / total_val
+
+    writer.add_scalar("mean_train_iou", mean_train_iou, e)
+    writer.add_scalar("mean_val_iou", mean_val_iou, e)
+    writer.add_scalar("train_loss", avg_train_loss.cpu().detach().numpy(), e)
+    writer.add_scalar("val_loss", avg_val_loss.cpu().detach().numpy(), e)
+    writer.add_scalar("train_acc", avg_train_acc, e)
+    writer.add_scalar("val_acc", avg_val_acc, e)
 
     # update our training history
     H["train_loss"].append(avg_train_loss.cpu().detach().numpy())
@@ -220,6 +236,7 @@ def train_model(train_data_path: pathlib.Path,
   
   # serialize the model to disk
   torch.save(unet, model_output_path / 'model_last.pth')
+  writer.flush()
   print('Best Val Score:{}'.format(best_val_score))
 
 

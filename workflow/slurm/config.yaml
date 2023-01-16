@@ -12,8 +12,8 @@ cluster: mkdir -p logs/{rule} &&
 default-resources:
   - partition=normal
   - mem_mb=10000
-  - threads=4
-  - include=cn[22-31]
+  - threads=1
+  - include=cn28
   - exclude=cn44,cn45,cn46,cn47,cn48,cn49,cn50,cn51,cn52,cn53,cn54
 restart-times: 0
 max-jobs-per-second: 5

@@ -7,7 +7,7 @@ import cv2
 
 import passion.util
 
-def xy_outline_to_latlon(poly_xy: list,
+def xy_poly_to_latlon(poly_xy: shapely.geometry.Polygon,
                          img_center_latlon: tuple,
                          img_shape: tuple,
                          zoom: int,
@@ -22,7 +22,7 @@ def xy_outline_to_latlon(poly_xy: list,
   if poly_xy.geom_type == 'MultiPolygon':
     polys_latlon = []
     for poly in poly_xy:
-      poly_latlon = xy_outline_to_latlon(poly, img_center_latlon, img_shape, zoom, lonlat_order)
+      poly_latlon = xy_poly_to_latlon(poly, img_center_latlon, img_shape, zoom, lonlat_order)
       polys_latlon.append(poly_latlon)
     return shapely.geometry.MultiPolygon(polys_latlon)
   
@@ -122,7 +122,7 @@ def outlines_to_image(polygons, classes, shape):
   img_bin = np.asarray(img_bin)
   return img_bin
 
-def get_image_rooftops_xy(image: np.ndarray):
+def get_image_classes_xy(image: np.ndarray):
   '''Takes a binary image in numpy representation and returns a list
   of polygons as a list of coordinates. The representation is in xy
   format relative to the image.
@@ -140,7 +140,7 @@ def get_image_rooftops_xy(image: np.ndarray):
       if len(contour) > 2:
         points = []
         for point in contour:
-          points.append((point[0][0], point[0][1]))
+          points.append([point[0][0], point[0][1]])
         poly = shapely.geometry.Polygon(points)
         # Fix invalid polygons
         poly = poly.buffer(0)
@@ -246,12 +246,20 @@ def get_panel_layout(outline: shapely.geometry.Polygon,
 
 def filter_polygon_holes(classes: list, polygons: list):
   ''''''
+  if not polygons: return [], []
+  
   filter_polygons = []
+  final_polygons = []
+  final_classes = []
   for i, p_a in enumerate(polygons):
+    holes = []
     for j, p_b in enumerate(polygons):
       if i != j:
-        if p_a.contains(p_b): filter_polygons.append(j)
-  
-  polygons = [p for i, p in enumerate(polygons) if i not in filter_polygons]
+        if p_a.contains(p_b):
+          filter_polygons.append(j)
+          holes.append(p_b.exterior.coords)
+    new_poly = shapely.geometry.Polygon(p_a, holes=holes)
+    final_polygons.append(new_poly)
+  polygons = [p for i, p in enumerate(final_polygons) if i not in filter_polygons]
   classes = [c for i, c in enumerate(classes) if i not in filter_polygons]
   return classes, polygons

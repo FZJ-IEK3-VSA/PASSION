@@ -20,6 +20,7 @@ train_path = pathlib.Path(training_config['train_folder'])
 val_path = pathlib.Path(training_config['val_folder'])
 model_output_path = pathlib.Path(training_config['output_folder']) / training_config['folder_name']
 model_output_path = results_path / model_output_path
+model_name = training_config['model_name']
 
 batch_size = int(training_config['batch_size'])
 n_epochs = int(training_config['n_epochs'])
@@ -29,6 +30,7 @@ num_classes = int(training_config['num_classes'])
 passion.segmentation.training.train_model(train_path,
                                           val_path,
                                           model_output_path,
+                                          model_name,
                                           num_classes=num_classes,
                                           batch_size=batch_size,
                                           learning_rate=learning_rate,

@@ -14,11 +14,12 @@ with open(configfile, "r") as stream:
         print(exc)
         exit
 
-segmentation_config = config.get('SuperstructureSegmentation')
+segmentation_config = config.get('SectionSegmentation')
 image_retrieval_config = config.get('ImageRetrieval')
 results_path = pathlib.Path(config.get('results_path'))
 zoom = image_retrieval_config.get('zoom')
 project_results_path = results_path / (f"{config.get('project_name')}-z{zoom}")
+
 
 input_folder = image_retrieval_config['output_folder']
 input_path = project_results_path / input_folder
@@ -37,6 +38,7 @@ kernel_size = int(kernel_size)
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f'Using torch device: {device}')
 if device=='cuda': print(f'Name: {torch.cuda.get_device_name(0)}')
+
 model_rel_path = segmentation_config['model_rel_path']
 model_path = results_path / model_rel_path
 model = torch.load(str(model_path), map_location=torch.device(device))

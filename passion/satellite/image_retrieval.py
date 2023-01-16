@@ -9,6 +9,7 @@ import math
 import traceback
 import pkg_resources
 import mahotas.polygon
+import rasterio
 
 import passion.util
 
@@ -81,14 +82,14 @@ def generate_dataset(
     
     offset_x, offset_y = passion.util.gis.get_image_offset(bbox, zoom)
 
-    x1, y1 = passion.util.gis.latlon_toXY(lat1, lon1, zoom)
-    x2, y2 = passion.util.gis.latlon_toXY(lat2, lon2, zoom)
-    x1, x2 = min(x1, x2), max(x1, x2)
-    y1, y2 = min(y1, y2), max(y1, y2)
+    northwest_x1, northwest_y1 = passion.util.gis.latlon_toXY(lat1, lon1, zoom)
+    northwest_x2, northwest_y2 = passion.util.gis.latlon_toXY(lat2, lon2, zoom)
+    northwest_x1, northwest_x2 = min(northwest_x1, northwest_x2), max(northwest_x1, northwest_x2)
+    northwest_y1, northwest_y2 = min(northwest_y1, northwest_y2), max(northwest_y1, northwest_y2)
 
     # START CENTER INSTEAD OF BORDER
-    x1 = x1 + (request_width//2)
-    y1 = y1 + (request_height//2)
+    x1 = northwest_x1 + (request_width//2)
+    y1 = northwest_y1 + ((request_height)//2)
 
     current_x = x1
     current_y = y1
@@ -96,12 +97,13 @@ def generate_dataset(
     valid_request = True
 
     print('Trying zoom level: {0}'.format(zoom))
-    print('Map pixels from\t({0},{1})\nTo\t({2},{3})'.format(x1,y1,x2,y2))
+    print('Map pixels from\t({0},{1})\nTo\t({2},{3})'.format(northwest_x1,northwest_y1,northwest_x2,northwest_y2))
 
     # x=0, y=0 is at lat=90 lon=-180
-    pbar = tqdm.tqdm(total=math.ceil(abs(x1-x2)/request_width) * math.ceil(abs(y1-y2)/request_height), position=0, leave=True)
-    while ((current_y  < y2) and valid_request):
-      while ((current_x < x2) and valid_request):
+    total = math.ceil(abs(x1-northwest_x2)/request_width) * math.ceil(abs(y1-northwest_y2)/request_height)
+    pbar = tqdm.tqdm(total=total, position=0, leave=True)
+    while ((current_y  < northwest_y2) and valid_request):
+      while ((current_x < northwest_x2) and valid_request):
         # Current image center latlon values
         current_lat, current_lon = passion.util.gis.xy_tolatlon(current_x, current_y, zoom)
 
@@ -133,7 +135,30 @@ def generate_dataset(
               img = filter_image_shapefile(img, shapefile_pixels_relative)
             
             filename = passion.util.gis.get_filename((current_lat, current_lon), zoom)
-            save_img(img, output_path, filename)
+            #save_img(img, output_path, filename)
+
+            tif_name = filename.replace('.png', '.tif')
+            img_np = np.asarray(img)
+            height, width, channels = img_np.shape
+            img_rgb = np.moveaxis(img_np, -1, 0)
+            west, north, east, south = (current_x - (width//2), current_y + (height//2) - (watermark//2), current_x + (width//2), current_y - (height//2) - (watermark//2))
+            transform = rasterio.transform.from_bounds(west=west,
+                                                       south=south,
+                                                       east=east,
+                                                       north=north,
+                                                       width=width,
+                                                       height=height)
+            # https://epsg.io/3857
+            crs = rasterio.CRS.from_epsg(3857)
+
+            new_dataset = rasterio.open(str(output_path / tif_name), 'w', driver='GTiff',
+                                        height = height, width = width,
+                                        count=3, dtype=str(img_rgb.dtype),
+                                        crs=crs,
+                                        transform=transform)
+            new_dataset.update_tags(zoom_level=zoom)
+            new_dataset.write(img_rgb)
+            new_dataset.close()
         
         except Exception as e:
           #TODO: handle specific exceptions

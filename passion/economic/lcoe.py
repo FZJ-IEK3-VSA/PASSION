@@ -1,4 +1,5 @@
 import pathlib
+import xarray
 
 import passion.util
 
@@ -13,8 +14,16 @@ DEFAULT_LCOE_PARAMS = {
   'yearly_degradation': 0.005
 }
 
-def generate_economic(input_path: pathlib.Path, input_filename: str,
-                      output_path: pathlib.Path, output_filename: str):
+def generate_economic(input_path: pathlib.Path,
+                      input_filename: str,
+                      output_path: pathlib.Path,
+                      output_filename: str,
+                      panel_lifespan: int = 25,
+                      inverter_lifespan: int = 13,
+                      inverter_price_rate: float = 0.2,
+                      other_costs: float = 200,
+                      discount_rate: float = 0.08,
+                      yearly_degradation: float = 0.005):
   '''Generates a CSV file containing the economic potential of the input sections.
   The used metric is the Levelised Cost of Electricity, that divides the overall
   costs of an energy system during its lifetime by its overall benefits, or
@@ -46,15 +55,28 @@ def generate_economic(input_path: pathlib.Path, input_filename: str,
   output_filename  -- str, name for the economic analysis output.
   '''
   output_path.mkdir(parents=True, exist_ok=True)
-  sections = passion.util.io.load_csv(input_path, input_filename + '.csv')
 
-  for section in sections:
-    section['lcoe_eur_MWh'] = calculate_lcoe(section['yearly_gen'],
-                                             section['capacity'],
-                                             section['modules_cost'],
-                                             DEFAULT_LCOE_PARAMS)
+  if not input_filename.endswith('.nc'):
+    input_filename += '.nc'
+  with xarray.open_dataset(str(input_path / input_filename)) as technical_ds:
+    print(technical_ds)
+    lcoe = calculate_lcoe(technical_ds.section_yearly_system_generation,
+                          technical_ds.section_capacity,
+                          technical_ds.section_modules_cost,
+                          lcoe_params = {
+                          'panel_lifespan': panel_lifespan,
+                          'inverter_lifespan': inverter_lifespan,
+                          'inverter_price_rate': inverter_price_rate,
+                          'other_costs': other_costs,
+                          'discount_rate': discount_rate,
+                          'yearly_degradation': yearly_degradation
+                          })
+    technical_ds = technical_ds.assign(section_lcoe=lcoe)
+  
+  if not output_filename.endswith('.nc'):
+    output_filename += '.nc'
+  technical_ds.to_netcdf(str(output_path / output_filename))
 
-  passion.util.io.save_to_csv(sections, output_path, output_filename)
   return
 
 def calculate_lcoe(generation: float, capacity: float, modules_cost: float, lcoe_params: dict):
