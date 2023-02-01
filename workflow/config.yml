@@ -17,7 +17,7 @@ ImageRetrieval:
 
 RooftopSegmentation:
   output_folder: 'segmentation/rooftops'
-  model_rel_path: 'model/rooftop-segmentation/inria-raw-12e.pth'
+  model_rel_path: 'model/rooftop-segmentation/rooftops.pth'
   osm: False
   tile_size: 512
   stride: 512
@@ -31,7 +31,7 @@ RooftopSegmentation:
 
 SectionSegmentation:
   output_folder: 'segmentation/sections'
-  model_rel_path: 'model/section-segmentation/sections-mix-aug-20e.pth'
+  model_rel_path: 'model/section-segmentation/sections.pth'
   tile_size: 512
   stride: 512
   background_class: 17
@@ -40,7 +40,7 @@ SectionSegmentation:
   
 SuperstructureSegmentation:
   output_folder: 'segmentation/superstructures'
-  model_rel_path: 'model/superst-segmentation/superstructures-rid-20e.pth'
+  model_rel_path: 'model/superst-segmentation/superstructures.pth'
   tile_size: 512
   stride: 512
   background_class: 8
@@ -82,7 +82,7 @@ SectionSegmentationTraining:
   val_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed/val'
   output_folder: 'model'
   folder_name: 'section-segmentation'
-  model_name: 'sections-mix-raw-20e.pth'
+  model_name: 'sections.pth'
   num_classes: 18
   batch_size: 8
   learning_rate: 0.00001
@@ -93,7 +93,7 @@ RooftopSegmentationTraining:
   val_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/INRIA/output/val'
   output_folder: 'model'
   folder_name: 'rooftop-segmentation'
-  model_name: 'inria-raw-12e.pth'
+  model_name: 'rooftops.pth'
   num_classes: 2
   batch_size: 8
   learning_rate: 0.00001
@@ -104,7 +104,7 @@ SuperstructureSegmentationTraining:
   val_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_superstructures_reviewed/val'
   output_folder: 'model'
   folder_name: 'superst-segmentation'
-  model_name: 'superstructures-rid-raw-20e.pth'
+  model_name: 'superstructures.pth'
   num_classes: 9
   batch_size: 8
   learning_rate: 0.00001

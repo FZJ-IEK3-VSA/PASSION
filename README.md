@@ -24,8 +24,10 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 
 ### Prerequisites
 
-Given the size of the models, this repository requires git LFS. You can install it in your system with the following guide:
-http://arfc.github.io/manual/guides/git-lfs. Please make sure that the models under `workflow/output/model/rooftop-segmentation`, `workflow/output/model/section-segmentation` and `workflow/output/model/pv-segmentation` are properly downloaded before moving on.
+[OLD] Given the size of the models, this repository requires git LFS. You can install it in your system with the following guide:
+http://arfc.github.io/manual/guides/git-lfs.
+
+In order to skip the training of the models, they can be directly downloaded via [this link](https://fz-juelich.sciebo.de/s/XsKThEaYnTotkbm). Please move the files to the folders `workflow/output/model/rooftop-segmentation`, `workflow/output/model/section-segmentation` and `workflow/output/model/superst-segmentation` before moving on.
 
 To set the project up and running any of the steps, you need to run in the root folder:
 
@@ -50,10 +52,11 @@ Each of the different steps will require different data files. You can run any o
 1. Satellite retrieval:
    * No additional data files are required. Only a valid API key for one of the satellite providers.
 2. Rooftop segmentation.
-   * The model `workflow/output/model/rooftop-segmentation/model_best.pth` is needed, and should have been directly downloaded when cloning the repository. Git-LFS is needed for the model to be properly downloaded.
-   * The model `workflow/output/model/section-segmentation/model_best.pth` is needed, and should have been directly downloaded when cloning the repository. Git-LFS is needed for the model to be properly downloaded.
-   * The model `workflow/output/model/pv-segmentation/model_best.pth` is needed, and should have been directly downloaded when cloning the repository. Git-LFS is needed for the model to be properly downloaded.
-3. Section segmentation.
+   * The models downloaded from [Sciebo](https://fz-juelich.sciebo.de/s/XsKThEaYnTotkbm) are needed, and should be located in the structure defined in the `config.yml` file. The default required structure is:
+     * `workflow/output/model/rooftop-segmentation/rooftops.pth`
+     * `workflow/output/model/section-segmentation/sections.pth`
+     * `workflow/output/model/superst-segmentation/superstructures.pth`
+3. Building analysis.
    * The file `workflow/output/tilt_distribution.pkl` is needed, and should have been directly downloaded when cloning the repository.
 4. Technical potential simulation:
    * A folder for ERA5 data processed in RESKit format is needed. A sample folder can be found in `https://github.com/FZJ-IEK3-VSA/RESKit/tree/master/reskit/_test/data/era5-like`.
