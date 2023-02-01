@@ -1,6 +1,6 @@
 
 results_path: workflow/output
-project_name: skopje
+project_name: aachen-test
 
 ImageRetrieval:
   api_key: ''
@@ -8,50 +8,52 @@ ImageRetrieval:
   zoom: 19
   output_folder: satellite
   bbox:
-    min_lat: 42.00250900219151
-    min_lon: 21.37517907059881
-    max_lat: 42.006949557339766
-    max_lon: 21.383691965463324
-  #shapefile: 'workflow/input/kreuzberg/297622950.shp'
+    min_lat: 50.780540206411494
+    min_lon: 6.075009080646369
+    max_lat: 50.769610743766044
+    max_lon: 6.094732826367578
+
+  #shapefile: 'workflow/input/apeldoorn/308148215.shp'
 
 RooftopSegmentation:
   output_folder: 'segmentation/rooftops'
-  model_rel_path: 'model/rooftop-segmentation/inria-aug-10e.pth'
+  model_rel_path: 'model/rooftop-segmentation/inria-raw-12e.pth'
   osm: False
   tile_size: 512
   stride: 512
   # Does not apply to osm:
   background_class: 0
-  polygon_simplification_distance: 6
-  kernel_size: 7 # For morphological opening and closing
+  opening_closing_kernel: 7 # For morphological opening and closing
+  erosion_kernel: 15 # For erosion
   # Does not apply to model:
   osm_request_interval: 30
   osm_output_folder: 'segmentation/osm'
 
 SectionSegmentation:
   output_folder: 'segmentation/sections'
-  model_rel_path: 'model/section-segmentation/sections-mix-aug.pth'
+  model_rel_path: 'model/section-segmentation/sections-mix-aug-20e.pth'
   tile_size: 512
   stride: 512
   background_class: 17
-  polygon_simplification_distance: 6
-  kernel_size: 7 # For morphological opening and closing
+  opening_closing_kernel: 7 # For morphological opening and closing
+  erosion_kernel: 1 # For erosion
   
 SuperstructureSegmentation:
   output_folder: 'segmentation/superstructures'
-  model_rel_path: 'model/pv-segmentation/rid-mix_best.pth'
+  model_rel_path: 'model/superst-segmentation/superstructures-rid-20e.pth'
   tile_size: 512
   stride: 512
   background_class: 8
-  polygon_simplification_distance: 6
-  kernel_size: 7 # For morphological opening and closing
+  opening_closing_kernel: 7 # For morphological opening and closing
+  erosion_kernel: 1 # For erosion
 
 RooftopAnalysis:
   output_folder: 'rooftops'
   file_name: 'rooftops'
   superstructures_file_name: 'superstructures'
-  minimum_area: 20
   tilt_rel_path: 'tilt_distribution.pkl'
+  simplification_distance: 0.2
+  merge_style: intersection
 
 TechnicalAnalysis:
   output_folder: 'technical'
@@ -60,13 +62,14 @@ TechnicalAnalysis:
   #era5_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/era5-like'
   sarah_path: '/storage/internal/data/gears/weather/SARAH/processed/4/8/5/2017'
   #sarah_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/sarah-like'
+  minimum_section_area: 20
   pv_model_id: 'LG Electronics LG370Q1C-A5' # RESKit identifier
   pv_model_name: 'LG370Q1C-A5'
   pv_model_capacity: 370 # kW
   pv_model_width: 1.7 # meters
   pv_model_height: 1.016 # meters
   pv_model_price: 350 # euros
-  pv_spacing_factor: 1.2
+  pv_spacing_factor: 1.3
   pv_border_spacing: 1.5 # meters
   pv_n_offset: 7
   
@@ -75,34 +78,34 @@ EconomicAnalysis:
   file_name: 'lcoe'
 
 SectionSegmentationTraining:
-  train_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed_aug/train'
+  train_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed/train'
   val_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed/val'
   output_folder: 'model'
   folder_name: 'section-segmentation'
-  model_name: 'sections-mix-aug.pth'
+  model_name: 'sections-mix-raw-20e.pth'
   num_classes: 18
   batch_size: 8
   learning_rate: 0.00001
-  n_epochs: 10
+  n_epochs: 20
 
 RooftopSegmentationTraining:
-  train_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/INRIA/output/train_aug'
-  val_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/INRIA/output/val_aug'
+  train_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/INRIA/output/train'
+  val_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/INRIA/output/val'
   output_folder: 'model'
   folder_name: 'rooftop-segmentation'
-  model_name: 'inria-aug-10e.pth'
+  model_name: 'inria-raw-12e.pth'
   num_classes: 2
   batch_size: 8
   learning_rate: 0.00001
-  n_epochs: 10
+  n_epochs: 12
 
 SuperstructureSegmentationTraining:
-  train_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_superstructures_reviewed_aug/train'
+  train_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_superstructures_reviewed/train'
   val_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_superstructures_reviewed/val'
   output_folder: 'model'
-  folder_name: 'pv-segmentation'
-  model_name: 'rid-mix_best.pth'
+  folder_name: 'superst-segmentation'
+  model_name: 'superstructures-rid-raw-20e.pth'
   num_classes: 9
   batch_size: 8
   learning_rate: 0.00001
-  n_epochs: 10
+  n_epochs: 20
