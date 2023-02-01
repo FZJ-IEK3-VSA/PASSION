@@ -213,12 +213,18 @@ def train_model(train_data_path: pathlib.Path,
     avg_train_acc = total_correct / total
     avg_val_acc = total_val_correct / total_val
 
-    writer.add_scalar("mean_train_iou", mean_train_iou, e)
-    writer.add_scalar("mean_val_iou", mean_val_iou, e)
-    writer.add_scalar("train_loss", avg_train_loss.cpu().detach().numpy(), e)
-    writer.add_scalar("val_loss", avg_val_loss.cpu().detach().numpy(), e)
-    writer.add_scalar("train_acc", avg_train_acc, e)
-    writer.add_scalar("val_acc", avg_val_acc, e)
+    writer.add_scalars(f'iou', {
+        'mean_train_iou': mean_train_iou,
+        'mean_val_iou': mean_val_iou,
+    }, e)
+    writer.add_scalars(f'loss', {
+        'train_loss': avg_train_loss.cpu().detach().numpy(),
+        'val_loss': avg_val_loss.cpu().detach().numpy(),
+    }, e)
+    writer.add_scalars(f'acc', {
+        'train_acc': avg_train_acc,
+        'val_acc': avg_val_acc,
+    }, e)
 
     # update our training history
     H["train_loss"].append(avg_train_loss.cpu().detach().numpy())
