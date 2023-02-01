@@ -8,10 +8,10 @@ import cv2
 import passion.util
 
 def xy_poly_to_latlon(poly_xy: shapely.geometry.Polygon,
-                         img_center_latlon: tuple,
-                         img_shape: tuple,
-                         zoom: int,
-                         lonlat_order: bool = False
+                      img_center_latlon: tuple,
+                      img_shape: tuple,
+                      zoom: int,
+                      lonlat_order: bool = False
 ):
   '''Takes a polygon or list of polygons in a pixel coordinate system and trasforms them
   into latitude and longitude taking into account the zoom level.
@@ -72,7 +72,7 @@ def get_area(polygon: shapely.geometry.Polygon, center_latlon: tuple, zoom: int)
 def get_rooftop_image(poly, image):
   '''Given an image and an outline as a list of coordinates, returns the
   filtered image of the rooftop cropped to its bounding box.
-  TODO: docstring'''
+  '''
   minx, miny, maxx, maxy = poly.bounds
 
   image_portion = image[int(miny):int(maxy), int(minx):int(maxx)]
@@ -90,7 +90,6 @@ def get_rooftop_image(poly, image):
 def filter_outline(polygon, image):
   '''Takes an outline as a Polygon and a numpy image and returns the
   filtered image using the outline as a mask.
-  TODO: filter inner holes and properly handle MultiPolygons
   '''
   if polygon.geom_type == 'MultiPolygon':
     no_holes = shapely.geometry.MultiPolygon(shapely.geometry.Polygon(p.exterior) for p in polygon)
@@ -111,8 +110,8 @@ def filter_outline(polygon, image):
   return image
 
 def outlines_to_image(polygons, classes, shape):
-  '''Takes a list of polygons and an image size, and returns the numpy
-  representation of the binary image with the polygons as a mask.'''
+  '''Takes a list of polygons, their corresponding classes, and an image size,
+  and returns the numpy representation of the binary image with the polygons as a mask.'''
   size_y, size_x = shape[:2]
 
   img_bin = PIL.Image.new('L', (size_x, size_y))
@@ -137,6 +136,8 @@ def get_image_classes_xy(image: np.ndarray, simplification_distance: int):
   '''Takes a binary image in numpy representation and returns a list
   of polygons as a list of coordinates. The representation is in xy
   format relative to the image.
+  A simplification distance can be specify in order to simplify the
+  detected polygons.
   '''
   seg_classes = np.unique(image)[np.unique(image) != 0]
   class_list = []
@@ -264,7 +265,11 @@ def get_panel_layout(outline: shapely.geometry.Polygon,
   return shapely.geometry.MultiPolygon(panel_cells)
 
 def filter_polygon_holes(classes: list, polygons: list):
-  ''''''
+  '''
+  Given a list of polygons with their corresponding classes,
+  it removes those that are contained by others, and adds
+  them as holes.
+  '''
   if not polygons: return [], []
 
   clean_polygons = []

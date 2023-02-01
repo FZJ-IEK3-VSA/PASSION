@@ -53,6 +53,28 @@ def train_model(train_data_path: pathlib.Path,
                 batch_size: int = 1,
                 learning_rate: float = 0.00001,
                 n_epochs: int = 10):
+  '''
+  Takes a training and a validation data paths, their parameters,
+  and trains a segmentation model based on it.
+
+  Data paths must follow the following structure:
+  data_path
+  |-image
+    |-<filename>.png
+  |-label
+    |-<filename>.png
+  
+  ---
+  
+  train_data_path     -- Path, path of the training data.
+  val_data_path       -- Path, path of the validation data.
+  model_output_path   -- Path, folder in which the model will be stored
+  model_name          -- str, name for the model file
+  num_classes         -- int, number of classes in the segmentation task
+  batch_size          -- int, number of samples to take at a time for training
+  learning_rate       -- float, rate of the optimizer
+  n_epochs            -- int, number of full dataset iterations
+  '''
   model_output_path.mkdir(parents=True, exist_ok=True)
   
   train_image_paths = sorted(list((train_data_path / 'image').glob('*.png')))

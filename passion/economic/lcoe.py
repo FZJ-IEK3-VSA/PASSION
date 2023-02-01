@@ -24,35 +24,23 @@ def generate_economic(input_path: pathlib.Path,
                       other_costs: float = 200,
                       discount_rate: float = 0.08,
                       yearly_degradation: float = 0.005):
-  '''Generates a CSV file containing the economic potential of the input sections.
+  '''Generates a NetCDF file containing the economic potential of the input sections.
   The used metric is the Levelised Cost of Electricity, that divides the overall
   costs of an energy system during its lifetime by its overall benefits, or
   electricity generation.
 
-  The CSV file will contain the following columns:
-    -lat: float latitude value of the section center.
-    -lon: float longitude value of the section center.
-    -yearly_gen: yearly estimated generation of the section in Wh.
-    -elevation: sea level of the building.
-    -capacity: total capacity of the estimated PV system.
-    -tilt: estimated tilt of the section. If flat, an optimal value is given.
-    -azimuth: estimated orientation of the section. If flat, an optimal value is given.
-    -area: estimated area of the section in square meters.
-    -flat: int indicating if the section was estimated to be flat (1) or not (0).
-    -outline_xy: list of tuples indicating the section outline relative to the original image.
-    -outline_latlon: list of tuples indicating the section outline in latitude and longitude.
-    -original_image_name: name of the image from which the rooftop was extracted.
-    -section_image_name: name of the generated image of the section in the 'sections' folder.
-    -modules_cost: total estimated cost of the system PV modules.
-    -lcoe_eur_MWh: levelised cost of electrity of the section during its lifespan in Mega-Watts Hour.
-
-
   ---
   
-  input_path       -- Path, folder in which the technical potential analysis is stored.
-  input_filename   -- str, name for the technical analysis output.
-  output_path      -- Path, folder in which the economic potential analysis will be stored.
-  output_filename  -- str, name for the economic analysis output.
+  input_path          -- Path, folder in which the technical potential analysis is stored.
+  input_filename      -- str, name for the technical analysis output.
+  output_path         -- Path, folder in which the economic potential analysis will be stored.
+  output_filename     -- str, name for the economic analysis output.
+  panel_lifespan      -- int, lifespan of the solar panels.
+  inverter_lifespan   -- int, lifespan of the inverter.
+  inverter_price_rate -- float, estimated cost of the inerter per installed W of capacity.
+  other_costs         -- float, other fixed initial investment costs.
+  discount_rate       -- float, economic annual discount rate.
+  yearly_degradation  -- float, rate of yearly degradation of the PV system.
   '''
   output_path.mkdir(parents=True, exist_ok=True)
 

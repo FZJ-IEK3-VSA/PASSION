@@ -16,23 +16,7 @@ def generate_technical(input_path: pathlib.Path,
                        minimum_section_area: float,
                        pv_panel_properties: dict
 ):
-  '''Generates a CSV file containing the technical potential of the input sections.
-
-  The CSV file will contain the following columns:
-    -lat: float latitude value of the section center.
-    -lon: float longitude value of the section center.
-    -yearly_gen: yearly estimated generation of the section in Wh.
-    -elevation: sea level of the building.
-    -capacity: total capacity of the estimated PV system.
-    -tilt: estimated tilt of the section. If flat, an optimal value is given.
-    -azimuth: estimated orientation of the section. If flat, an optimal value is given.
-    -area: estimated area of the section in square meters.
-    -flat: int indicating if the section was estimated to be flat (1) or not (0).
-    -outline_xy: list of tuples indicating the section outline relative to the original image.
-    -outline_latlon: list of tuples indicating the section outline in latitude and longitude.
-    -original_image_name: name of the image from which the rooftop was extracted.
-    -rooftop_image_name: name of the generated image of the section in the 'img' folder.
-    -modules_cost: total estimated cost of the system PV modules.
+  '''Generates a NetCDF file containing the technical potential of the input sections.
   
   Solar simulation is carried out with RESKit. This requires two datasets:
     -ERA5 climate dataset.
@@ -41,12 +25,14 @@ def generate_technical(input_path: pathlib.Path,
 
   ---
   
-  input_path         -- Path, folder in which the sections analysis is stored.
-  input_filename     -- str, name for the sections analysis file.
-  output_path        -- Path, folder in which the technical potential analysis will be stored.
-  output_filename    -- str, name for the technical analysis output.
-  era5_path          -- Path, folder in which the ERA5 dataset is stored.
-  sarah_path         -- Path, folder in which the SARAH dataset is stored.
+  input_path            -- Path, folder in which the sections analysis is stored.
+  input_filename        -- str, name for the sections analysis file.
+  output_path           -- Path, folder in which the technical potential analysis will be stored.
+  output_filename       -- str, name for the technical analysis output.
+  era5_path             -- Path, folder in which the ERA5 dataset is stored.
+  sarah_path            -- Path, folder in which the SARAH dataset is stored.
+  minimum_section_area  -- float, threshold area to filter sections in square meters.
+  pv_panel_properties   -- Path, dictionary containing the properties for the panel simulation.
   '''
   output_path.mkdir(parents=True, exist_ok=True)
 

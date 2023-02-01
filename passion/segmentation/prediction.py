@@ -35,6 +35,19 @@ def segment_dataset(input_path: pathlib.Path,
   in order to make predictions in the borders.
 
   Tile size must match model's input size.
+
+  ---
+  
+  input_path              -- Path, path of the input images.
+  model                   -- torch.nn.Module, path of the training data.
+  output_path             -- Path, output path of the segmented data.
+  background_class        -- int, integer defined to be the background class in the input dataset.
+  tile_size               -- int, input size of the model.
+  stride                  -- int, image separation for each new prediction.
+  save_masks              -- bool, if true, saves the resulting masks into disk.
+  save_filtered           -- bool, if true, saves the filtered images into disk.
+  opening_closing_kernel  -- int, size of the kernel for opening and closing in post processing.
+  erosion_kernel          -- int, size of the kernel for erosion in post processing.
   '''
   output_path.mkdir(parents=True, exist_ok=True)
   

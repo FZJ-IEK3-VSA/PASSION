@@ -44,20 +44,20 @@ def generate_dataset(
 
   50°40′46.461″N 95°48′26.533″W
   with a zoom level of 19 would be:
-  50D40M46461SNORTH_95D48M26533SWEST_19L.png
+  50D40M46461SNORTH_95D48M26533SWEST_19L.tif
 
   One of bbox or shapefile must be specified in order to define a region.
   If both are specified, shapefile is taken.
   TODO: if both are specified, select the bbox inside the shapefile
-  TODO: accept shapefile.Shapes instead of shapefile.Shape as shapefile
   ---
   
-  api_key       -- string, API key of the specified service
-  service       -- string, currently must be one of 'bing' or 'google'
-  output_path   -- Path, folder in which tiles will be stored
-  zoom          -- integer, zoom level (https://docs.microsoft.com/en-us/bingmaps/articles/understanding-scale-and-resolution)
-  bbox          -- tuple of tuples of floats: ((lat1, lon1), (lat2, lon2))
-  shapefile     -- shapefile, used for filtering
+  api_key           -- string, API key of the specified service
+  service           -- string, currently must be one of 'bing' or 'google'
+  output_path       -- Path, folder in which tiles will be stored
+  zoom              -- integer, zoom level (https://docs.microsoft.com/en-us/bingmaps/articles/understanding-scale-and-resolution)
+  bbox              -- tuple of tuples of floats: ((lat1, lon1), (lat2, lon2))
+  shapefile         -- shapefile, used for filtering
+  find_valid_zoom   -- bool, finds the next available zoom level if True
   '''
   if bbox == None and shapefile == None:
     raise ValueError('Either bbox and/or shapefile must be specified.')

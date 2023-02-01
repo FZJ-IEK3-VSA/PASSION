@@ -9,37 +9,26 @@ import xarray
 import passion.util
 
 def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
-                      section_predictions_path: pathlib.Path,
-                      superstructure_predictions_path: pathlib.Path,
-                      output_path: pathlib.Path,
-                      output_filename: str,
-                      superstructures_output_filename: str,
-                      tilt_distribution_path: pathlib.Path,
-                      simplification_distance: float,
-                      merge_style: str = 'union',
+                     section_predictions_path: pathlib.Path,
+                     superstructure_predictions_path: pathlib.Path,
+                     output_path: pathlib.Path,
+                     output_filename: str,
+                     tilt_distribution_path: pathlib.Path,
+                     simplification_distance: float,
+                     merge_style: str = 'union',
 ):
-  '''Generates a CSV file containing the detected rooftops of the input segmentations.
-  It will also generate an 'img' folder containing the filtered image of each
-  rooftop, with the same naming convention as the previous images with the
-  latitude and longitude values of the center of the rooftop.
-
-  The CSV file will contain the following columns:
-    -rooftop_id: id of the rooftop as part of a single analysis.
-    -outline_xy: list of tuples indicating the rooftop outline relative to the original image.
-    -outline_latlon: list of tuples indicating the rooftop outline in latitude and longitude.
-    -outline_lonlat: list of tuples indicating the rooftop outline in longitude and latitude.
-    -center_latlon: tuple of the latitude and longitude of the center of the rooftop.
-    -area: estimated area of the rooftop in square meters.
-    -original_image_name: name of the image from which the rooftop was extracted.
-    -rooftop_image_name: name of the generated image of the rooftop in the 'img' folder.
-
+  '''Generates a NetCDF file containing the detected sections of the input segmentations.
 
   ---
   
-  predictions_path  -- Path, folder in which segmentation masks and filtered images are stored.
-  output_path       -- Path, folder in which rooftop analysis will be stored.
-  output_filename   -- str, name for the rooftops analysis file.
-  minimum_area      -- int, minimum area in square meters to consider a rooftop for the analysis.
+  rooftop_predictions_path        -- Path, folder in which the rooftop segmentation masks are stored.
+  section_predictions_path        -- Path, folder in which the rooftop segmentation masks are stored.
+  superstructure_predictions_path -- Path, folder in which the rooftop segmentation masks are stored.
+  output_path                     -- Path, folder in which the results will be stored.
+  output_filename                 -- str, name for the results file.
+  tilt_distribution_path          -- Path, location of the tilt distribution pickle file.
+  simplification_distance         -- float, factor of simplification for the polygons. Between 0 and 1.
+  merge_style                     -- str, merging strategy for the sections and rooftops segmentations. Must be one of 'union' 'prioritize-rooftops' or 'intersection'.
   '''
   output_path.mkdir(parents=True, exist_ok=True)
 
