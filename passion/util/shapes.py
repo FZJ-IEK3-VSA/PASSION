@@ -21,7 +21,7 @@ def xy_poly_to_latlon(poly_xy: shapely.geometry.Polygon,
   '''
   if poly_xy.geom_type == 'MultiPolygon':
     polys_latlon = []
-    for poly in poly_xy:
+    for poly in poly_xy.geoms:
       poly_latlon = xy_poly_to_latlon(poly, img_center_latlon, img_shape, zoom, lonlat_order)
       polys_latlon.append(poly_latlon)
     return shapely.geometry.MultiPolygon(polys_latlon)
@@ -38,7 +38,18 @@ def xy_poly_to_latlon(poly_xy: shapely.geometry.Polygon,
     lat, lon = passion.util.gis.xy_tolatlon(img_start_x + point[0], img_start_y + point[1], zoom)
     new_point = [lon, lat] if lonlat_order else [lat, lon]
     outline_latlon.append(new_point)
-  return shapely.geometry.Polygon(outline_latlon)
+
+  # Add each of the polygon interiors (holes)
+  interiors = []
+  for interior in poly_xy.interiors:
+    interior_latlon = []
+    for point in interior.coords:
+      lat, lon = passion.util.gis.xy_tolatlon(img_start_x + point[0], img_start_y + point[1], zoom)
+      new_point = [lon, lat] if lonlat_order else [lat, lon]
+      interior_latlon.append(new_point)
+    interiors.append(interior_latlon)
+  
+  return shapely.geometry.Polygon(outline_latlon, interiors)
 
 def get_outline_center(poly: shapely.geometry.Polygon):
   '''Given an outline as a list of coordinates, return its center.'''
@@ -122,7 +133,7 @@ def outlines_to_image(polygons, classes, shape):
   img_bin = np.asarray(img_bin)
   return img_bin
 
-def get_image_classes_xy(image: np.ndarray):
+def get_image_classes_xy(image: np.ndarray, simplification_distance: int):
   '''Takes a binary image in numpy representation and returns a list
   of polygons as a list of coordinates. The representation is in xy
   format relative to the image.
@@ -144,12 +155,20 @@ def get_image_classes_xy(image: np.ndarray):
         poly = shapely.geometry.Polygon(points)
         # Fix invalid polygons
         poly = poly.buffer(0)
-        # TODO: deal multipolygons
-        if poly.geom_type == 'MultiPolygon':
-          poly = list(poly.geoms)[0]
+        poly = poly.simplify(simplification_distance)
         
-        polygon_list.append(poly)
-        class_list.append(seg_class)
+        if poly.geom_type == 'Polygon':
+          polygon_list.append(poly)
+          class_list.append(seg_class)
+        elif poly.geom_type == 'MultiPolygon':
+          for p in poly.geoms:
+            polygon_list.append(p)
+            class_list.append(seg_class)
+        elif poly.geom_type == 'GeometryCollection':
+          for p in poly.geoms:
+            if p.geom_type == 'Polygon':
+              polygon_list.append(p)
+              class_list.append(seg_class)
   
   return class_list, polygon_list
 
@@ -247,19 +266,34 @@ def get_panel_layout(outline: shapely.geometry.Polygon,
 def filter_polygon_holes(classes: list, polygons: list):
   ''''''
   if not polygons: return [], []
-  
+
+  clean_polygons = []
+  clean_classes = []
+  for i, (polygon, p_class) in enumerate(zip(polygons, classes)):
+    if polygon.geom_type == 'MultiPolygon':
+      for p in polygon.geoms:
+        clean_polygons.append(p)
+        clean_classes.append(p_class)
+    elif polygon.geom_type == 'Polygon':
+      clean_polygons.append(polygon)
+      clean_classes.append(p_class)
+      
   filter_polygons = []
   final_polygons = []
   final_classes = []
-  for i, p_a in enumerate(polygons):
+  for i, p_a in enumerate(clean_polygons):
     holes = []
-    for j, p_b in enumerate(polygons):
+    for j, p_b in enumerate(clean_polygons):
       if i != j:
         if p_a.contains(p_b):
           filter_polygons.append(j)
           holes.append(p_b.exterior.coords)
-    new_poly = shapely.geometry.Polygon(p_a, holes=holes)
+    new_poly = shapely.geometry.Polygon(p_a.exterior.coords, holes)
+    try:
+      new_poly = new_poly.buffer(0)
+    except:
+      pass
     final_polygons.append(new_poly)
-  polygons = [p for i, p in enumerate(final_polygons) if i not in filter_polygons]
-  classes = [c for i, c in enumerate(classes) if i not in filter_polygons]
-  return classes, polygons
+  clean_polygons = [p for i, p in enumerate(final_polygons) if i not in filter_polygons]
+  clean_classes = [c for i, c in enumerate(clean_classes) if i not in filter_polygons]
+  return clean_classes, clean_polygons

@@ -15,7 +15,8 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
                       output_filename: str,
                       superstructures_output_filename: str,
                       tilt_distribution_path: pathlib.Path,
-                      minimum_area: int = 25
+                      simplification_distance: float,
+                      merge_style: str = 'union',
 ):
   '''Generates a CSV file containing the detected rooftops of the input segmentations.
   It will also generate an 'img' folder containing the filtered image of each
@@ -49,6 +50,8 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
 
   tilt_distribution = passion.util.io.load_pickle(tilt_distribution_path)
 
+  if merge_style not in ['union', 'prioritize-rooftops', 'intersection']: merge_style = 'union'
+
   final_sections = {}
   final_supersts = {}
   for img_i, (rooftop_path, section_path, superst_path) in tqdm.tqdm(enumerate(zip_paths)):
@@ -73,9 +76,9 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
     img_center_lat, img_center_lon = passion.util.gis.xy_tolatlon(img_center_x, img_center_y, zoom)
   
     # Extract all of the polygons
-    rooftop_classes, rooftops = passion.util.shapes.get_image_classes_xy(rooftop_img)
-    section_classes, sections = passion.util.shapes.get_image_classes_xy(section_img)
-    superst_classes, supersts = passion.util.shapes.get_image_classes_xy(superst_img)
+    rooftop_classes, rooftops = passion.util.shapes.get_image_classes_xy(rooftop_img, simplification_distance)
+    section_classes, sections = passion.util.shapes.get_image_classes_xy(section_img, simplification_distance)
+    superst_classes, supersts = passion.util.shapes.get_image_classes_xy(superst_img, simplification_distance)
     if rooftops:
       rooftops_tuple = tuple(zip(*[(c, poly) for (c, poly) in zip(rooftop_classes, rooftops) if not poly.is_empty]))
       if len(rooftops_tuple) == 2: rooftop_classes, rooftops = rooftops_tuple
@@ -103,8 +106,11 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
     # - Rooftops that do not have any sections will be treated as flat rooftops
     optimal_tilt = 31
     for i, rooftop in enumerate(rooftops):
+      if not rooftop.is_valid: print(f'Invalid rooftop: {i}')
       for j, (section, section_class) in enumerate(zip(sections, section_classes)):
+        if not section.is_valid: print(f'Invalid section: {j}')
         if rooftop.intersects(section):
+          if merge_style != 'union': section = section.intersection(rooftop)
           # Filter the section area from the rooftop
           rooftop = rooftop.difference(section)
           # If it has not been added before (intersects with another rooftop), add it
@@ -113,7 +119,6 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
             azimuth = get_azimuth_from_segmentation(section_class)
             tilt = optimal_tilt if flat else get_tilt(tilt_distribution)
 
-            # TODO: add area
             partial_sections[f'i{img_i}s{j}'] = {'polygon_xy': section,
                                      'azimuth': azimuth,
                                      'tilt': tilt,
@@ -122,7 +127,7 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
                                      'area': passion.util.shapes.get_area(section, (img_center_lat, img_center_lon), zoom)
                                     }
       # After filtering its sections, add it if it is not empty
-      if not rooftop.is_empty:
+      if merge_style != 'intersection' and not rooftop.is_empty:
         partial_sections[f'i{img_i}r{i}'] = {'polygon_xy': rooftop,
                                   'azimuth': 180,
                                   'tilt': optimal_tilt,
@@ -132,14 +137,30 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
                                 }
     # - Superstructures that are outside of detected rooftops will be filtered out
     # - Superstructures that intersect with rooftops/sections will be filtered from the available area
-    for k, v in partial_sections.items():
+    for k, v in list(partial_sections.items()):
       poly = v['polygon_xy']
       v['superstructures'] = []
       for i, (superst, superst_class) in enumerate(zip(supersts, superst_classes)):
-        if poly.intersects(superst):
+        intersects = False
+        try:
+          intersects = poly.intersects(superst)
+        except Exception as e:
+          print(f'Encountered exception processing polygons:')
+          print(poly.wkt)
+          print(superst.wkt)
+
+        if intersects:
+          # Keep only the part of the superstructure inside of the section
+          superst = superst.intersection(poly)
           # Filter the superstructure area from the section
-          poly = poly.difference(superst)
-          if i not in partial_supersts:
+          try:
+            poly = poly.difference(superst)
+          except:
+            print(type(poly))
+            print(type(superst))
+            print(type(poly.wkt))
+            print(type(superst.wkt))
+          if i not in partial_supersts and superst.is_valid and (superst.geom_type == 'Polygon' or superst.geom_type == 'MultiPolygon'):
             # TODO: add area and other info
             partial_supersts[i] = {
               'class': superst_class,
@@ -147,7 +168,18 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
               'original_img_center_latlon': (img_center_lat, img_center_lon),
               'area': passion.util.shapes.get_area(superst, (img_center_lat, img_center_lon), zoom)
             }
-      partial_sections[k].update({'polygon_xy': poly})
+      # If polygon has become a Geometrycollection, remove non polygons
+      if poly.geom_type == 'GeometryCollection':
+        polys = []
+        [polys.append(p) for p in poly.geoms if p.geom_type == 'Polygon']
+        poly = shapely.geometry.MultiPolygon(polys)
+
+      if poly.geom_type == 'Polygon' or poly.geom_type == 'MultiPolygon':
+        partial_sections[k].update({'polygon_xy': poly})
+      else:
+        # Debug why the poly is not a (multi)poly
+        print(poly.geom_type)
+        del partial_sections[k]
 
     # Convert polygons to latlon
     for section_k, section_v in partial_sections.items():

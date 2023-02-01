@@ -13,6 +13,7 @@ def generate_technical(input_path: pathlib.Path,
                        output_filename: str,
                        era5_path: pathlib.Path,
                        sarah_path: pathlib.Path,
+                       minimum_section_area: float,
                        pv_panel_properties: dict
 ):
   '''Generates a CSV file containing the technical potential of the input sections.
@@ -82,6 +83,14 @@ def generate_technical(input_path: pathlib.Path,
     original_image_shape = sections_ds.original_image_width.item(), sections_ds.original_image_height.item()
     zoom_level = sections_ds.zoom_level.item()
 
+    # Create separate dataset for filtered rooftops, and rename variables
+    filtered_ds = sections_ds.where(sections_ds.section_area < minimum_section_area, drop=True)
+    section_vars = [var for var in list(sections_ds.variables) if 'section_' in var]
+    filter_vars = [var.replace('section_','filtered_') for var in section_vars]
+    filtered_ds = filtered_ds[section_vars]
+    rename_dict = dict(zip(section_vars, filter_vars))
+    filtered_ds = filtered_ds.rename(rename_dict)
+
     sections_df = pd.concat([section_id,
                              section_wkt_latlon,
                              section_wkt_xy,
@@ -97,7 +106,7 @@ def generate_technical(input_path: pathlib.Path,
     print(f'Converted sections to pandas DataFrame, columns: {sections_df.columns}')
 
     
-
+    superst_id = sections_ds.superst_id.to_dataframe()
     superst_wkt_latlon = sections_ds.superst_wkt_latlon.to_dataframe()
     superst_wkt_xy = sections_ds.superst_wkt_xy.to_dataframe()
     superst_seg_class = sections_ds.superst_seg_class.to_dataframe()
@@ -105,7 +114,8 @@ def generate_technical(input_path: pathlib.Path,
     superst_img_center_lon = sections_ds.superst_img_center_lon.to_dataframe()
     superst_area = sections_ds.superst_area.to_dataframe()
 
-    supersts_df = pd.concat([superst_wkt_latlon,
+    supersts_df = pd.concat([superst_id,
+                             superst_wkt_latlon,
                              superst_wkt_xy,
                              superst_seg_class,
                              superst_img_center_lat,
@@ -115,7 +125,7 @@ def generate_technical(input_path: pathlib.Path,
     obstacles_df = supersts_df
     obstacles_ds = xarray.Dataset.from_dataframe(obstacles_df)
 
-    # Rename to remove "section_"
+    # Rename to remove "superst_"
     supersts_df.columns = supersts_df.columns.str.replace('superst_', '')
 
     panels_df = supersts_df.drop(supersts_df[supersts_df.seg_class != 1].index)
@@ -124,35 +134,34 @@ def generate_technical(input_path: pathlib.Path,
     print(f'Converted obstacles to pandas DataFrame, columns: {obstacles_df.columns}')
   
   # CALCULATE SECTIONS
-  # Necessary for RESKit: lat, lon, azimuth, tilt, elevation, capacity
-  sections_df['poly_latlon'] = sections_df['wkt_latlon'].apply(lambda x: shapely.wkt.loads(x))
-  sections_df['poly_xy'] = sections_df['wkt_xy'].apply(lambda x: shapely.wkt.loads(x))
-  # filter empty polygons
-  sections_df = sections_df[sections_df.poly_latlon.apply(lambda x: not x.is_empty)]
-  sections_df['centroid_latlon'] = sections_df['poly_latlon'].apply(lambda x: x.centroid)
-  sections_df['lat'] = sections_df['centroid_latlon'].apply(lambda x: x.coords[0][0])
-  sections_df['lon'] = sections_df['centroid_latlon'].apply(lambda x: x.coords[0][1])
-  sections_df['elev'] = 204.0 #TODO: request elevation from 'https://api.opentopodata.org/v1/'
-  # Non necessary for RESKit: area, flat, wkt_latlon, wkt_xy, n_panels, modules_cost
-  sections_df['pv_model'] = pv_model_name
+  if not sections_df.empty:
+    # Necessary for RESKit: lat, lon, azimuth, tilt, elevation, capacity
+    sections_df['poly_latlon'] = sections_df['wkt_latlon'].apply(lambda x: shapely.wkt.loads(x))
+    sections_df['poly_xy'] = sections_df['wkt_xy'].apply(lambda x: shapely.wkt.loads(x))
+    # filter empty polygons
+    sections_df = sections_df[sections_df.poly_latlon.apply(lambda x: not x.is_empty)]
+    sections_df['centroid_latlon'] = sections_df['poly_latlon'].apply(lambda x: x.centroid)
+    sections_df['lat'] = sections_df['centroid_latlon'].apply(lambda x: x.coords[0][0])
+    sections_df['lon'] = sections_df['centroid_latlon'].apply(lambda x: x.coords[0][1])
+    sections_df['elev'] = 204.0 #TODO: request elevation from 'https://api.opentopodata.org/v1/'
+    # Non necessary for RESKit: area, flat, wkt_latlon, wkt_xy, n_panels, modules_cost
+    sections_df['pv_model'] = pv_model_name
 
-  sections_df['gr'] = sections_df['lat'].apply(lambda lat: passion.util.gis.ground_resolution(lat, zoom_level))
-  sections_df['pv_pixel_size'] = sections_df['gr'].apply(lambda gr: (pv_model_width / gr, pv_model_height / gr))
-  sections_df['pv_border_spacing_pixels'] = sections_df['gr'].apply(lambda gr: pv_border_spacing / gr)
+    sections_df['gr'] = sections_df['lat'].apply(lambda lat: passion.util.gis.ground_resolution(lat, zoom_level))
+    sections_df['pv_pixel_size'] = sections_df['gr'].apply(lambda gr: (pv_model_width / gr, pv_model_height / gr))
+    sections_df['pv_border_spacing_pixels'] = sections_df['gr'].apply(lambda gr: pv_border_spacing / gr)
 
-  sections_df['pv_layout_multipoly'] = sections_df.apply(lambda x: passion.util.shapes.get_panel_layout(x.poly_xy,
-                                                                                            panel_size=x.pv_pixel_size,
-                                                                                            azimuth=x.azimuth,
-                                                                                            spacing_factor=pv_spacing_factor,
-                                                                                            border_spacing=x.pv_border_spacing_pixels,
-                                                                                            n_offset=pv_n_offset),
-                                                                                            axis=1)
-  sections_df['n_panels'] = sections_df['pv_layout_multipoly'].apply(lambda x: len(x.geoms))
-  sections_df = sections_df.drop(sections_df[sections_df.n_panels < 1].index)
+    sections_df['pv_layout_multipoly'] = sections_df.apply(lambda x: passion.util.shapes.get_panel_layout(x.poly_xy,
+                                                                                              panel_size=x.pv_pixel_size,
+                                                                                              azimuth=x.azimuth,
+                                                                                              spacing_factor=pv_spacing_factor,
+                                                                                              border_spacing=x.pv_border_spacing_pixels,
+                                                                                              n_offset=pv_n_offset),
+                                                                                              axis=1)
+    sections_df['n_panels'] = sections_df['pv_layout_multipoly'].apply(lambda x: len(x.geoms))
+    sections_df = sections_df.drop(sections_df[sections_df.n_panels < 1].index)
 
-  # If no estimated panels fit, do not analyze.
-  none_estimated_panels = (sections_df.shape[0] < 1)
-  if not none_estimated_panels:
+  if not sections_df.empty:
     sections_df['pv_layout_wkt'] = sections_df.apply(lambda x: passion.util.shapes.xy_poly_to_latlon(x.pv_layout_multipoly,
                                                                                             (x.img_center_lat, x.img_center_lon),
                                                                                             original_image_shape,
@@ -170,34 +179,33 @@ def generate_technical(input_path: pathlib.Path,
 
   
   # CALCULATE PANELS
-  # Necessary for RESKit: lat, lon, azimuth, tilt, elevation, capacity
-  panels_df['poly_latlon'] = panels_df['wkt_latlon'].apply(lambda x: shapely.wkt.loads(x))
-  panels_df['poly_xy'] = panels_df['wkt_xy'].apply(lambda x: shapely.wkt.loads(x))
-  # filter empty polygons
-  panels_df = panels_df[panels_df.poly_latlon.apply(lambda x: not x.is_empty)]
-  panels_df['centroid_latlon'] = panels_df['poly_latlon'].apply(lambda x: x.centroid)
-  panels_df['lat'] = panels_df['centroid_latlon'].apply(lambda x: x.coords[0][0])
-  panels_df['lon'] = panels_df['centroid_latlon'].apply(lambda x: x.coords[0][1])
-  panels_df['elev'] = 204.0 #TODO: request elevation from 'https://api.opentopodata.org/v1/'
-  panels_df['azimuth'] = 180.0
-  panels_df['tilt'] = 31.0
-  # Calculate capacity
-  panels_df['gr'] = panels_df['lat'].apply(lambda lat: passion.util.gis.ground_resolution(lat, zoom_level))
-  panels_df['pv_pixel_size'] = panels_df['gr'].apply(lambda gr: (pv_model_width / gr, pv_model_height / gr))
-  panels_df['pv_border_spacing_pixels'] = panels_df['gr'].apply(lambda gr: pv_border_spacing / gr)
-  panels_df['pv_layout_multipoly'] = panels_df.apply(lambda x: passion.util.shapes.get_panel_layout(x.poly_xy,
-                                                                                            panel_size=x.pv_pixel_size,
-                                                                                            azimuth=x.azimuth,
-                                                                                            spacing_factor=1,
-                                                                                            border_spacing=0,
-                                                                                            n_offset=pv_n_offset),
-                                                                                            axis=1)
-  panels_df['n_panels'] = panels_df['pv_layout_multipoly'].apply(lambda x: len(x.geoms))
-  panels_df = panels_df.drop(panels_df[panels_df.n_panels < 1].index)
-  # If no existing panels fit, do not analyze.
-  none_existing_panels = (panels_df.shape[0] < 1)
-  
-  if not none_existing_panels:
+  if not panels_df.empty:
+    # Necessary for RESKit: lat, lon, azimuth, tilt, elevation, capacity
+    panels_df['poly_latlon'] = panels_df['wkt_latlon'].apply(lambda x: shapely.wkt.loads(x))
+    panels_df['poly_xy'] = panels_df['wkt_xy'].apply(lambda x: shapely.wkt.loads(x))
+    # filter empty polygons
+    panels_df = panels_df[panels_df.poly_latlon.apply(lambda x: not x.is_empty)]
+    panels_df['centroid_latlon'] = panels_df['poly_latlon'].apply(lambda x: x.centroid)
+    panels_df['lat'] = panels_df['centroid_latlon'].apply(lambda x: x.coords[0][0])
+    panels_df['lon'] = panels_df['centroid_latlon'].apply(lambda x: x.coords[0][1])
+    panels_df['elev'] = 204.0 #TODO: request elevation from 'https://api.opentopodata.org/v1/'
+    panels_df['azimuth'] = 180.0
+    panels_df['tilt'] = 31.0
+    # Calculate capacity
+    panels_df['gr'] = panels_df['lat'].apply(lambda lat: passion.util.gis.ground_resolution(lat, zoom_level))
+    panels_df['pv_pixel_size'] = panels_df['gr'].apply(lambda gr: (pv_model_width / gr, pv_model_height / gr))
+    panels_df['pv_border_spacing_pixels'] = panels_df['gr'].apply(lambda gr: pv_border_spacing / gr)
+    panels_df['pv_layout_multipoly'] = panels_df.apply(lambda x: passion.util.shapes.get_panel_layout(x.poly_xy,
+                                                                                              panel_size=x.pv_pixel_size,
+                                                                                              azimuth=x.azimuth,
+                                                                                              spacing_factor=1,
+                                                                                              border_spacing=0,
+                                                                                              n_offset=pv_n_offset),
+                                                                                              axis=1)
+    panels_df['n_panels'] = panels_df['pv_layout_multipoly'].apply(lambda x: len(x.geoms))
+    panels_df = panels_df.drop(panels_df[panels_df.n_panels < 1].index)
+
+  if not panels_df.empty:
     panels_df['pv_layout_wkt'] = panels_df.apply(lambda x: passion.util.shapes.xy_poly_to_latlon(x.pv_layout_multipoly,
                                                                                             (x.img_center_lat, x.img_center_lon),
                                                                                             original_image_shape,
@@ -230,7 +238,7 @@ def generate_technical(input_path: pathlib.Path,
   'capacity_factor', 'total_system_generation']
   '''
   
-  if not none_estimated_panels:
+  if not sections_df.empty:
     output_variables = [
       'lat', 'lon', 'elev', 'capacity', 'tilt',
       'azimuth', 'flat', 'wkt_latlon', 'wkt_xy',
@@ -246,7 +254,7 @@ def generate_technical(input_path: pathlib.Path,
                                                           output_variables=output_variables
                                                           )
   
-  if not none_existing_panels:
+  if not panels_df.empty:
     output_variables = [
       'lat', 'lon', 'elev', 'capacity', 'tilt',
       'azimuth', 'wkt_latlon', 'wkt_xy',
@@ -263,38 +271,44 @@ def generate_technical(input_path: pathlib.Path,
                                                         )
   
   # Mean capacity factor by location (annual mean capacity factor)
-  if not none_estimated_panels:
+  if not sections_df.empty:
     yearly_capacity_factor = technical_ds.capacity_factor.fillna(0).mean(dim='time')
     yearly_system_generation = technical_ds.total_system_generation.fillna(0).mean(dim='time') * 365 * 24
     technical_ds = technical_ds.assign(yearly_capacity_factor=yearly_capacity_factor)
     technical_ds = technical_ds.assign(yearly_system_generation=yearly_system_generation)
   # Mean capacity factor by location (annual mean capacity factor)
-  if not none_existing_panels:
+  if not panels_df.empty:
     yearly_capacity_factor = panels_ds.capacity_factor.fillna(0).mean(dim='time')
     yearly_system_generation = panels_ds.total_system_generation.fillna(0).mean(dim='time')
     panels_ds = panels_ds.assign(yearly_capacity_factor=yearly_capacity_factor)
     panels_ds = panels_ds.assign(yearly_system_generation=yearly_system_generation)
 
-  ds_list = [obstacles_ds]
-  if not none_estimated_panels:
+  print(f'Filtered sections variables: {list(filtered_ds.keys())}')
+  filtered_wkt_latlon_str, filtered_wkt_xy_str = filtered_ds.filtered_wkt_latlon.astype(str), \
+                                                 filtered_ds.filtered_wkt_xy.astype(str)
+  filtered_ds = filtered_ds.assign(filtered_wkt_latlon=filtered_wkt_latlon_str, \
+                                   filtered_wkt_xy=filtered_wkt_xy_str)
+  print(f'Superstructures variables: {list(obstacles_ds.keys())}')
+  ds_list = [obstacles_ds, filtered_ds]
+  if not sections_df.empty:
     # Rename variables
     current_variables = list(technical_ds.keys())
-    print(f'DS current variables: {current_variables}')
+    print(f'Estimated panels current variables: {current_variables}')
     prefix_variables = [('section_' + var) for var in current_variables]
     rename_dict = dict(zip(current_variables, prefix_variables))
     technical_ds = technical_ds.rename(name_dict=rename_dict)
     new_variables = list(technical_ds.keys())
-    print(f'DS new variables: {new_variables}')
+    print(f'Estimated panels new variables: {new_variables}')
     ds_list.append(technical_ds)
-  if not none_existing_panels:
+  if not panels_df.empty:
     # Rename variables
     current_variables = list(panels_ds.keys())
-    print(f'DS current variables: {current_variables}')
+    print(f'Existing panels current variables: {current_variables}')
     prefix_variables = [('panel_' + var) for var in current_variables]
     rename_dict = dict(zip(current_variables, prefix_variables))
     panels_ds = panels_ds.rename(name_dict=rename_dict)
     new_variables = list(panels_ds.keys())
-    print(f'DS new variables: {new_variables}')
+    print(f'Existing panels new variables: {new_variables}')
     ds_list.append(panels_ds)
   final_ds = xarray.merge(ds_list)
 
