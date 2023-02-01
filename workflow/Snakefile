@@ -4,6 +4,8 @@ results = config['results_path']
 project_results = f"{results}/{config['project_name']}-z{config['ImageRetrieval']['zoom']}"
 image_retrieval_output = config['ImageRetrieval']['output_folder']
 
+run_config = project_results + '/run-config.yml'
+
 rooftop_segmentation_output = config['RooftopSegmentation']['output_folder']
 section_segmentation_output = config['SectionSegmentation']['output_folder']
 superstructure_segmentation_output = config['SuperstructureSegmentation']['output_folder']
@@ -43,7 +45,16 @@ superstructure_segmentation_model_output = superstructure_segmentation_model_fol
 
 rule all:
     input:
-        project_results + "/" + economic_output + '.nc'
+        project_results + "/" + economic_output + '.nc',
+        run_config
+
+rule copy_config:
+    output:
+        run_config
+    shell:
+        '''
+        cp workflow/config.yml {run_config}
+        '''
 
 checkpoint generate_dataset:
     output:
@@ -52,8 +63,13 @@ checkpoint generate_dataset:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/generate_dataset.py --config workflow/config.yml
+        python workflow/scripts/generate_dataset.py --config {run_config}
         '''
+
+
+
+
+print('Running')
 
 # input function for rule aggregate, return paths to all files produced by the checkpoint 'somestep'
 def aggregate_input(wildcards):
@@ -72,7 +88,7 @@ checkpoint segment_rooftops:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/segment_rooftops.py --config workflow/config.yml
+        python workflow/scripts/segment_rooftops.py --config {run_config}
         '''
 
 checkpoint segment_sections:
@@ -85,7 +101,7 @@ checkpoint segment_sections:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/segment_sections.py --config workflow/config.yml
+        python workflow/scripts/segment_sections.py --config {run_config}
         '''
 
 checkpoint segment_superstructures:
@@ -98,7 +114,7 @@ checkpoint segment_superstructures:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/segment_superstructures.py --config workflow/config.yml
+        python workflow/scripts/segment_superstructures.py --config {run_config}
         '''
 
 def aggregate_segment_rooftop_input(wildcards):
@@ -127,7 +143,7 @@ rule analyze_rooftops:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/analyze_rooftops.py --config workflow/config.yml
+        python workflow/scripts/analyze_rooftops.py --config {run_config}
         '''
 
 rule analyze_technical:
@@ -139,7 +155,7 @@ rule analyze_technical:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/analyze_technical.py --config workflow/config.yml
+        python workflow/scripts/analyze_technical.py --config {run_config}
         '''
                 
 rule analyze_economic:
@@ -151,7 +167,7 @@ rule analyze_economic:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/analyze_economic.py --config workflow/config.yml
+        python workflow/scripts/analyze_economic.py --config {run_config}
         '''
 
 rule train_rooftop_segmentation:
@@ -163,7 +179,7 @@ rule train_rooftop_segmentation:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/train_rooftop_segmentation.py --config workflow/config.yml
+        python workflow/scripts/train_rooftop_segmentation.py --config {run_config}
         '''
 
 rule train_section_segmentation:
@@ -175,7 +191,7 @@ rule train_section_segmentation:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/train_section_segmentation.py --config workflow/config.yml
+        python workflow/scripts/train_section_segmentation.py --config {run_config}
         '''
 
 rule train_superstructure_segmentation:
@@ -187,5 +203,5 @@ rule train_superstructure_segmentation:
         '../requirements.yml'
     shell:
         '''
-        python workflow/scripts/train_superstructure_segmentation.py --config workflow/config.yml
+        python workflow/scripts/train_superstructure_segmentation.py --config {run_config}
         '''

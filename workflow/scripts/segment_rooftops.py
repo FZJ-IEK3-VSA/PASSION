@@ -31,13 +31,12 @@ osm_output_path = project_results_path / osm_output_folder
 
 is_osm = segmentation_config.get('osm')
 
-polygon_simplification_distance = segmentation_config.get('polygon_simplification_distance')
-polygon_simplification_distance = float(polygon_simplification_distance)
-
 background_class = segmentation_config.get('background_class')
 
-kernel_size = segmentation_config.get('kernel_size')
-kernel_size = int(kernel_size)
+opening_closing_kernel = segmentation_config.get('opening_closing_kernel')
+opening_closing_kernel = int(opening_closing_kernel)
+erosion_kernel = segmentation_config.get('erosion_kernel')
+erosion_kernel = int(erosion_kernel)
 
 osm_request_interval = segmentation_config.get('osm_request_interval')
 osm_request_interval = int(osm_request_interval)
@@ -62,6 +61,6 @@ else:
         model = model,
         output_path = output_path,
         background_class = background_class,
-        polygon_simplification_distance = polygon_simplification_distance,
-        kernel_size = kernel_size
+        opening_closing_kernel = opening_closing_kernel,
+    erosion_kernel = erosion_kernel
         )

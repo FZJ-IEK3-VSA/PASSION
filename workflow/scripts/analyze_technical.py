@@ -32,6 +32,8 @@ output_name = technical_config['file_name']
 era5_path = technical_config.get('era5_path')
 sarah_path = technical_config.get('sarah_path')
 
+minimum_section_area = float(technical_config.get('minimum_section_area'))
+
 pv_model_id = technical_config.get('pv_model_id')
 pv_model_name = technical_config.get('pv_model_name')
 pv_model_capacity = float(technical_config.get('pv_model_capacity'))
@@ -60,4 +62,5 @@ passion.technical.reskit.generate_technical(input_path,
                                             output_name,
                                             era5_path,
                                             sarah_path,
+                                            minimum_section_area,
                                             pv_panel_properties)

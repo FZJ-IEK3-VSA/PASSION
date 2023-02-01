@@ -37,7 +37,10 @@ superstructures_output_name = rooftop_config['superstructures_file_name']
 tilt_distribution_rel_path = rooftop_config['tilt_rel_path']
 tilt_distribution_path = results_path / tilt_distribution_rel_path
 
-minimum_area = int(rooftop_config.get('minimum_area'))
+simplification_distance = rooftop_config.get('simplification_distance')
+simplification_distance = float(simplification_distance)
+
+merge_style = rooftop_config.get('merge_style')
 
 passion.buildings.building_analysis.analyze_rooftops(rooftop_input_path,
                                                      section_input_path,
@@ -46,4 +49,5 @@ passion.buildings.building_analysis.analyze_rooftops(rooftop_input_path,
                                                      output_name,
                                                      superstructures_output_name,
                                                      tilt_distribution_path,
-                                                     minimum_area)
+                                                     simplification_distance,
+                                                     merge_style)
