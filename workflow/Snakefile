@@ -57,12 +57,15 @@ rule copy_config:
         '''
 
 checkpoint generate_dataset:
+    input:
+        run_config
     output:
         directory(project_results + "/" + image_retrieval_output)
     conda:
         '../requirements.yml'
     shell:
         '''
+        unset PROJ_LIB
         python workflow/scripts/generate_dataset.py --config {run_config}
         '''
 
