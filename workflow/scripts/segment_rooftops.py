@@ -41,12 +41,14 @@ erosion_kernel = int(erosion_kernel)
 osm_request_interval = segmentation_config.get('osm_request_interval')
 osm_request_interval = int(osm_request_interval)
 
+num_retries = segmentation_config.get('num_retries')
+num_retries = int(num_retries)
+
 if is_osm:
     passion.segmentation.osm.generate_osm(input_path = input_path,
                     output_path = osm_output_path,
-                    save_masks = True,
-                    save_filtered = True,
-                    osm_request_interval = osm_request_interval)
+                    osm_request_interval = osm_request_interval,
+                    num_retries = num_retries)
 else:
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     print(f'Using torch device: {device}')
@@ -62,5 +64,4 @@ else:
         output_path = output_path,
         background_class = background_class,
         opening_closing_kernel = opening_closing_kernel,
-    erosion_kernel = erosion_kernel
-        )
+        erosion_kernel = erosion_kernel)

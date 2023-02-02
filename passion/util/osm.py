@@ -6,7 +6,7 @@ import passion.util
 
 OVERPASS_URL = "http://overpass-api.de/api/interpreter"
 
-def get_footprints_latlon(bbox: tuple, osm_request_interval: float = 5):
+def get_footprints_latlon(bbox: tuple, osm_request_interval: float = 5, num_retries: int = 5):
   '''Given a bounding box, requests the OSM buildings of the area
   and returns them as a list of outlines.'''
   latlon1, latlon2 = bbox
@@ -14,15 +14,7 @@ def get_footprints_latlon(bbox: tuple, osm_request_interval: float = 5):
   min_lat, max_lat = min(latlon1[0], latlon2[0]), max(latlon1[0], latlon2[0])
   min_lon, max_lon = min(latlon1[1], latlon2[1]), max(latlon1[1], latlon2[1])
 
-  overpass_query_ways = """
-  [out:json];
-  way
-    ["building"]
-    ({0},{1},{2},{3});
-  out;
-  """.format(min_lat, min_lon, max_lat, max_lon)
-
-  overpass_query_nodes = """
+  overpass_query = """
   [out:json];
   way
     ["building"]
@@ -34,31 +26,36 @@ def get_footprints_latlon(bbox: tuple, osm_request_interval: float = 5):
   #TODO: handle if empty request
 
   # workaround for hitting request limit (error 429) from overpass
-  time.sleep(osm_request_interval)
-  response = requests.get(OVERPASS_URL, 
-                        params={'data': overpass_query_ways})
+  #time.sleep(osm_request_interval)
+  num_retries = 5
+  for i in range(num_retries):
+    try:
+      response = requests.get(OVERPASS_URL, params={'data': overpass_query})
+      results = response.json()
+      print(f'Successful request {i}.')
+      break
+    except:
+      print(f'Error in request {i}, retrying {num_retries - 1 - i} more times.')
+      results = None
+      print(f'Waiting {osm_request_interval} seconds.')
+      time.sleep(osm_request_interval)
   
-  try:
-    ways = response.json()
-  except:
-    return []
-  
-  # workaround for hitting request limit (error 429) from overpass
-  time.sleep(osm_request_interval)
-  response = requests.get(OVERPASS_URL, 
-                        params={'data': overpass_query_nodes})
-                        
-  try:
-    nodes = response.json()
-  except:
-    return []
-  
+  if not results: return []
+
+  nodes = []
+  ways = []
+  for result in results['elements']:
+    if result['type'] == 'way':
+      ways.append(result)
+    elif result['type'] == 'node':
+      nodes.append(result)
+    else:
+      print(f'Other Overpass type: {result["type"]}')
 
   buildings = []
-  if (ways['elements'] and nodes['elements']):
-    get_node_latlon(ways['elements'][0]['nodes'][0], nodes['elements'])
-
-    buildings = get_buildings(ways['elements'], nodes['elements'])
+  if (ways and nodes):
+    #get_node_latlon(ways['elements'][0]['nodes'][0], nodes['elements'])
+    buildings = get_buildings(ways, nodes)
 
   return buildings
 

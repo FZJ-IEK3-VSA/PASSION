@@ -32,7 +32,6 @@ output_folder = rooftop_config['output_folder']
 output_path = project_results_path / output_folder
 
 output_name = rooftop_config['file_name']
-superstructures_output_name = rooftop_config['superstructures_file_name']
 
 tilt_distribution_rel_path = rooftop_config['tilt_rel_path']
 tilt_distribution_path = results_path / tilt_distribution_rel_path
@@ -47,7 +46,6 @@ passion.buildings.building_analysis.analyze_rooftops(rooftop_input_path,
                                                      superstructure_input_path,
                                                      output_path,
                                                      output_name,
-                                                     superstructures_output_name,
                                                      tilt_distribution_path,
                                                      simplification_distance,
                                                      merge_style)

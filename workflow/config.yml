@@ -1,6 +1,6 @@
 
 results_path: workflow/output
-project_name: aachen-test
+project_name: aachen-test-osm-union
 
 ImageRetrieval:
   api_key: ''
@@ -18,7 +18,7 @@ ImageRetrieval:
 RooftopSegmentation:
   output_folder: 'segmentation/rooftops'
   model_rel_path: 'model/rooftop-segmentation/rooftops.pth'
-  osm: False
+  osm: True
   tile_size: 512
   stride: 512
   # Does not apply to osm:
@@ -26,8 +26,9 @@ RooftopSegmentation:
   opening_closing_kernel: 7 # For morphological opening and closing
   erosion_kernel: 15 # For erosion
   # Does not apply to model:
-  osm_request_interval: 30
-  osm_output_folder: 'segmentation/osm'
+  osm_request_interval: 5
+  num_retries: 5
+  osm_output_folder: 'segmentation/rooftops'
 
 SectionSegmentation:
   output_folder: 'segmentation/sections'
@@ -53,7 +54,7 @@ RooftopAnalysis:
   superstructures_file_name: 'superstructures'
   tilt_rel_path: 'tilt_distribution.pkl'
   simplification_distance: 0.2
-  merge_style: intersection
+  merge_style: union # [intersect, prioritize-rooftops, union]
 
 TechnicalAnalysis:
   output_folder: 'technical'
