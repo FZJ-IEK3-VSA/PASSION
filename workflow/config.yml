@@ -1,6 +1,6 @@
 
 results_path: workflow/output
-project_name: aachen-test-osm-union
+project_name: dresde-test-model-prioritize
 
 ImageRetrieval:
   api_key: ''
@@ -18,7 +18,7 @@ ImageRetrieval:
 RooftopSegmentation:
   output_folder: 'segmentation/rooftops'
   model_rel_path: 'model/rooftop-segmentation/rooftops.pth'
-  osm: True
+  osm: False
   tile_size: 512
   stride: 512
   # Does not apply to osm:
@@ -54,15 +54,15 @@ RooftopAnalysis:
   superstructures_file_name: 'superstructures'
   tilt_rel_path: 'tilt_distribution.pkl'
   simplification_distance: 0.2
-  merge_style: union # [intersect, prioritize-rooftops, union]
+  merge_style: prioritize-rooftops # [intersection, prioritize-rooftops, union]
 
 TechnicalAnalysis:
   output_folder: 'technical'
   file_name: 'technical'
-  era5_path: '/storage/internal/data/gears/weather/ERA5/processed/4/8/5/2017'
-  #era5_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/era5-like'
-  sarah_path: '/storage/internal/data/gears/weather/SARAH/processed/4/8/5/2017'
-  #sarah_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/sarah-like'
+  #merra_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/merra-like'
+  merra_path: '/storage/internal/data/tsa/data/weather/merra2/europe/2016/'
+  #solar_atlas_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/gsa-ghi-like.tif'
+  solar_atlas_path: '/storage/internal/data/tsa/data/geography/world_bank_group/global_solar_atlas/World_GHI_GISdata_LTAy_DailySum_GlobalSolarAtlas_GEOTIFF/GHI.tif'
   minimum_section_area: 20
   pv_model_id: 'LG Electronics LG370Q1C-A5' # RESKit identifier
   pv_model_name: 'LG370Q1C-A5'

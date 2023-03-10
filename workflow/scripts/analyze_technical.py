@@ -29,8 +29,8 @@ output_path = project_results_path / output_folder
 
 output_name = technical_config['file_name']
 
-era5_path = technical_config.get('era5_path')
-sarah_path = technical_config.get('sarah_path')
+merra_path = technical_config.get('merra_path')
+solar_atlas_path = technical_config.get('solar_atlas_path')
 
 minimum_section_area = float(technical_config.get('minimum_section_area'))
 
@@ -60,7 +60,7 @@ passion.technical.reskit.generate_technical(input_path,
                                             input_name,
                                             output_path,
                                             output_name,
-                                            era5_path,
-                                            sarah_path,
+                                            merra_path,
+                                            solar_atlas_path,
                                             minimum_section_area,
                                             pv_panel_properties)

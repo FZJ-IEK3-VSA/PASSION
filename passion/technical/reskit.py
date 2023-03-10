@@ -11,8 +11,8 @@ def generate_technical(input_path: pathlib.Path,
                        input_filename: str,
                        output_path: pathlib.Path,
                        output_filename: str,
-                       era5_path: pathlib.Path,
-                       sarah_path: pathlib.Path,
+                       merra_path: pathlib.Path,
+                       solar_atlas_path: pathlib.Path,
                        minimum_section_area: float,
                        pv_panel_properties: dict
 ):
@@ -29,8 +29,8 @@ def generate_technical(input_path: pathlib.Path,
   input_filename        -- str, name for the sections analysis file.
   output_path           -- Path, folder in which the technical potential analysis will be stored.
   output_filename       -- str, name for the technical analysis output.
-  era5_path             -- Path, folder in which the ERA5 dataset is stored.
-  sarah_path            -- Path, folder in which the SARAH dataset is stored.
+  merra_path            -- Path, folder in which the MERRA-2 dataset is stored.
+  solar_atlas_path      -- Path, folder in which the Solar Atlas dataset is stored.
   minimum_section_area  -- float, threshold area to filter sections in square meters.
   pv_panel_properties   -- Path, dictionary containing the properties for the panel simulation.
   '''
@@ -233,9 +233,9 @@ def generate_technical(input_path: pathlib.Path,
       'capacity_factor', 'total_system_generation'
     ]
     print(f'Simulating sections...')
-    technical_ds = rk.solar.openfield_pv_sarah_unvalidated(sections_df,
-                                                          sarah_path,
-                                                          era5_path,
+    technical_ds = rk.solar.openfield_pv_merra_ryberg2019(sections_df,
+                                                          merra_path,
+                                                          solar_atlas_path,
                                                           module=pv_model_id,
                                                           output_variables=output_variables
                                                           )
@@ -249,9 +249,9 @@ def generate_technical(input_path: pathlib.Path,
       'capacity_factor', 'total_system_generation'
     ]
     print(f'Simulating existing panels...')
-    panels_ds = rk.solar.openfield_pv_sarah_unvalidated(panels_df,
-                                                        sarah_path,
-                                                        era5_path,
+    panels_ds = rk.solar.openfield_pv_merra_ryberg2019(panels_df,
+                                                        merra_path,
+                                                        solar_atlas_path,
                                                         module=pv_model_id,
                                                         output_variables=output_variables
                                                         )
