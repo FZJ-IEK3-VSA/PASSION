@@ -98,30 +98,36 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
       if not rooftop.is_valid: print(f'Invalid rooftop: {i}')
       for j, (section, section_class) in enumerate(zip(sections, section_classes)):
         if not section.is_valid: print(f'Invalid section: {j}')
-        if rooftop.intersects(section):
-          try:
-            if merge_style != 'union': section = section.intersection(rooftop)
-            # Filter the section area from the rooftop
-            rooftop = rooftop.difference(section)
-            # If it has not been added before (intersects with another rooftop), add it
-            if f'i{img_i}s{j}' not in partial_sections:
-              flat = 1 if section_class==17 else 0
-              azimuth = get_azimuth_from_segmentation(section_class)
-              tilt = optimal_tilt if flat else get_tilt(tilt_distribution)
+        try:
+          if rooftop.intersects(section):
+            try:
+              if merge_style != 'union': section = section.intersection(rooftop)
+              # Filter the section area from the rooftop
+              rooftop = rooftop.difference(section)
+              # If it has not been added before (intersects with another rooftop), add it
+              if f'i{img_i}s{j}' not in partial_sections:
+                flat = 1 if section_class==17 else 0
+                azimuth = get_azimuth_from_segmentation(section_class)
+                tilt = optimal_tilt if flat else get_tilt(tilt_distribution)
 
-              partial_sections[f'i{img_i}s{j}'] = {'polygon_xy': section,
-                                      'azimuth': azimuth,
-                                      'tilt': tilt,
-                                      'flat': flat,
-                                      'original_img_center_latlon': (img_center_lat, img_center_lon),
-                                      'area': passion.util.shapes.get_area(section, (img_center_lat, img_center_lon), zoom)
-                                      }
-          except:
-            print(f'Exception with intersecting processing polygons:')
-            print(type(section))
-            print(type(rooftop))
-            print(section.wkt)
-            print(rooftop.wkt)
+                partial_sections[f'i{img_i}s{j}'] = {'polygon_xy': section,
+                                        'azimuth': azimuth,
+                                        'tilt': tilt,
+                                        'flat': flat,
+                                        'original_img_center_latlon': (img_center_lat, img_center_lon),
+                                        'area': passion.util.shapes.get_area(section, (img_center_lat, img_center_lon), zoom)
+                                        }
+            except:
+              print(f'Exception with intersecting processing polygons:')
+              print(type(section))
+              print(type(rooftop))
+              print(section.wkt)
+              print(rooftop.wkt)
+        except:
+          print(rooftop)
+          print(type(rooftop))
+          print(section)
+          print(type(section))
       # After filtering its sections, add it if it is not empty
       if merge_style != 'intersection' and not rooftop.is_empty:
         partial_sections[f'i{img_i}r{i}'] = {'polygon_xy': rooftop,

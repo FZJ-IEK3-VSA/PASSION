@@ -24,9 +24,6 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 
 ### Prerequisites
 
-[OLD] Given the size of the models, this repository requires git LFS. You can install it in your system with the following guide:
-http://arfc.github.io/manual/guides/git-lfs.
-
 In order to skip the training of the models, they can be directly downloaded via [this link](https://fz-juelich.sciebo.de/s/XsKThEaYnTotkbm). Please move the files to the folders `workflow/output/model/rooftop-segmentation`, `workflow/output/model/section-segmentation` and `workflow/output/model/superst-segmentation` before moving on.
 
 To set the project up and running any of the steps, you need to run in the root folder:
@@ -145,7 +142,7 @@ A set of lower level jupyter notebooks for every step can be found in the exampl
 
 MIT License
 
-Copyright (c) 2021-2022 Rodrigo Pueblas (FZJ/IEK-3), Shruthi Patil (FZJ/IEK-3), Patrick Kuckertz (FZJ/IEK-3), Jann Weinand (FZJ/IEK-3), Leander Kotzur (FZJ/IEK-3), Detlef Stolten (FZJ/IEK-3)
+Copyright (c) 2023 Rodrigo Pueblas (FZJ/IEK-3), Shruthi Patil (FZJ/IEK-3), Patrick Kuckertz (FZJ/IEK-3), Jann Weinand (FZJ/IEK-3), Leander Kotzur (FZJ/IEK-3), Detlef Stolten (FZJ/IEK-3)
 
 You should have received a copy of the MIT License along with this program.
 If not, see https://opensource.org/licenses/MIT

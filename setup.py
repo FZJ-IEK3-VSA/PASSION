@@ -5,9 +5,9 @@ with open(os.path.join(dir_path, 'README.md'), "r") as fh:
 
 setuptools.setup(
     name='PASSION',
-    version='0.1.1',
-    author='Rodrigo Pueblas',
-    author_email='rodrigo.pueblas@hotmail.com',
+    version='1.0.0',
+    author='Rodrigo Pueblas, Shruthi Patil, Patrick Kuckertz, Jann Weinand, Leander Kotzur, Detlef Stolten',
+    author_email='r.pueblas@fz-juelich.de, s.patil@fz-juelich.de, p.kuckertz@fz-juelich.de, j.weinand@fz-juelich.de, l.kotzur@fz-juelich.de, d.stolten@fz-juelich.de',
     description='Photovoltaic Satellite Segmentation',
     long_description=long_description,
     long_description_content_type="text/markdown",
