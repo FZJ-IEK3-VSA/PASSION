@@ -142,7 +142,7 @@ A set of lower level jupyter notebooks for every step can be found in the exampl
 
 MIT License
 
-Copyright (c) 2023 Rodrigo Pueblas (FZJ/IEK-3), Shruthi Patil (FZJ/IEK-3), Patrick Kuckertz (FZJ/IEK-3), Jann Weinand (FZJ/IEK-3), Leander Kotzur (FZJ/IEK-3), Detlef Stolten (FZJ/IEK-3)
+Copyright (c) 2023 Forschungszentrum Jülich GmbH, Institute of Energy and Climate Research – Techno-economic Systems Analysis (IEK-3), 52425 Jülich, Germany
 
 You should have received a copy of the MIT License along with this program.
 If not, see https://opensource.org/licenses/MIT
