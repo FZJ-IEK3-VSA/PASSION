@@ -3,6 +3,7 @@ import os
 import pathlib
 import torch
 import shutil
+import xarray
 
 import passion
 
@@ -18,7 +19,7 @@ def test_image_retrieval():
     bbox=((50.77850739604879, 6.0768084397936395), (50.77514558009357, 6.081035433169415))
   )
 
-  assert len(list(output_path.glob('*.png'))) == 1
+  assert len(list(output_path.glob('*.tif'))) == 1
 
 @pytest.mark.skip(reason="Rate limit of OSM API")
 def test_get_osm_footprint():
@@ -27,10 +28,11 @@ def test_get_osm_footprint():
 
 def test_get_segmentation_prediction():
   '''Tests the segmentation output from the model.'''
-  model_path = TEMP_FILE_PATH / '../../workflow/output/model/rooftop-segmentation/model_best.pth'
+  model_path = TEMP_FILE_PATH / '../../workflow/output/model/rooftop-segmentation/rooftops.pth'
   input_path = TEMP_FILE_PATH / 'satellite'
   output_path = TEMP_FILE_PATH / 'segmentation'
   rooftops_output_path = output_path / 'rooftops'
+  sections_output_path = output_path / 'sections'
   superstructures_output_path = output_path / 'superstructures'
 
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -43,7 +45,17 @@ def test_get_segmentation_prediction():
         background_class = 17
         )
   
-  model_path = TEMP_FILE_PATH / '../../workflow/output/model/pv-segmentation/model_best.pth'
+  model_path = TEMP_FILE_PATH / '../../workflow/output/model/section-segmentation/sections.pth'
+  model = torch.load(str(model_path), map_location=torch.device(device))
+
+  passion.segmentation.prediction.segment_dataset(
+        input_path = input_path,
+        model = model,
+        output_path = sections_output_path,
+        background_class = 17
+        )
+  
+  model_path = TEMP_FILE_PATH / '../../workflow/output/model/superst-segmentation/superstructures.pth'
   model = torch.load(str(model_path), map_location=torch.device(device))
 
   passion.segmentation.prediction.segment_dataset(
@@ -57,24 +69,23 @@ def test_get_rooftops():
   '''Tests the rooftop prediction from the segmentation masks.'''
   
   input_path = TEMP_FILE_PATH / 'segmentation'
-  rooftops_input_path = input_path / 'rooftops'
-  superstructures_input_path = input_path / 'superstructures'
+  rooftop_predictions_path = input_path / 'rooftops'
+  section_predictions_path = input_path / 'sections'
+  superstructure_predictions_path = input_path / 'superstructures'
   output_path = TEMP_FILE_PATH / 'rooftops'
-  rooftops_output_name = 'rooftops'
-  superstructures_output_name = 'superstructures'
+  output_filename = 'rooftops'
   tilt_distribution_path = TEMP_FILE_PATH / '../data/tilt_distribution.pkl'
+  simplification_distance = 0.2
 
-  passion.buildings.rooftop_analysis.generate_rooftops(rooftops_input_path,
-                                                     superstructures_input_path,
-                                                     output_path,
-                                                     rooftops_output_name,
-                                                     superstructures_output_name,
-                                                     tilt_distribution_path,
-                                                     )
+  passion.buildings.building_analysis.analyze_rooftops(rooftop_predictions_path,
+                                                       section_predictions_path,
+                                                       superstructure_predictions_path,
+                                                       output_path,
+                                                       output_filename,
+                                                       tilt_distribution_path,
+                                                       simplification_distance
+                                                       )
 
-  rooftops = passion.util.io.load_csv(output_path, rooftops_output_name + '.csv')
-  images = list((output_path / 'img').glob('*.png'))
+  ds = xarray.open_dataset(str(output_path / (output_filename + '.nc')))
   
-  assert len(rooftops) == len(images)
-
   shutil.rmtree(TEMP_FILE_PATH)
