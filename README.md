@@ -2,7 +2,7 @@
 
 # PASSION - PhotovoltAic Satellite SegmentatION
 
-![Click here to see the package layers](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/-/blob/master/assets/layers.png)
+![Click here to see the package layers](https://github.com/FZJ-IEK3-VSA/PASSION/tree/master/assets/layers.png)
 
 The PASSION python package provides a framework for estimating the rooftop photovoltaic potential of a region by analysing its satellite imagery. The library allows all the necessary steps, like obtaining the
 imagery from one of the services (Bing Maps or Google Maps) or training the segmentation model.
@@ -16,7 +16,7 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 * Simulate and estimate the photovoltaic potential of the rooftops by using [RESKit](https://github.com/FZJ-IEK3-VSA/RESKit).
 * Transform the potential into economic terms using the Levelized Cost of Electricity (LCOE).
 
-![Click here to see the visual pipeline.](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/-/blob/master/assets/full_process.gif)
+![Click here to see the visual pipeline.](https://github.com/FZJ-IEK3-VSA/PASSION/tree/master/assets/full_process.gif)
 
 ## Getting Started
 
@@ -105,7 +105,7 @@ snakemake [<ONE OF THE PREVIOUS>] --until train_section_segmentation   # for the
 snakemake [<ONE OF THE PREVIOUS>] --until train_superstructure_segmentation   # for the superstructure segmentation model
 ```
 
-![Click here to see the rule diagram](https://jugit.fz-juelich.de/iek-3/groups/data-and-model-integration/patil/pueblas/passion/-/blob/master/assets/rules.png)
+![Click here to see the rule diagram](https://github.com/FZJ-IEK3-VSA/PASSION/tree/master/assets/rules.png)
 
 ---
 
