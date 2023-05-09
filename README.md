@@ -24,7 +24,7 @@ Final result can be obtained in terms of Levelised Cost of Electricity (LCOE).
 
 ### Prerequisites
 
-In order to skip the training of the models, they can be directly downloaded via [this link](https://fz-juelich.sciebo.de/s/XsKThEaYnTotkbm). Please move the files to the folders `workflow/output/model/rooftop-segmentation`, `workflow/output/model/section-segmentation` and `workflow/output/model/superst-segmentation` before moving on.
+In order to skip the training of the models, they can be directly downloaded via [this link](https://doi.org/10.5281/zenodo.7886980). Please move the files to the folders `workflow/output/model/rooftop-segmentation`, `workflow/output/model/section-segmentation` and `workflow/output/model/superst-segmentation` before moving on.
 
 To set the project up and running any of the steps, you need to run in the root folder:
 
