@@ -28,4 +28,21 @@ output_path = project_results_path / output_folder
 
 output_name = economic_config['file_name']
 
-passion.economic.lcoe.generate_economic(input_path, input_name, output_path, output_name)
+panel_lifespan = float(economic_config['panel_lifespan'])
+inverter_lifespan = float(economic_config['inverter_lifespan'])
+inverter_price_rate = float(economic_config['inverter_price_rate'])
+other_costs = float(economic_config['other_costs'])
+discount_rate = float(economic_config['discount_rate'])
+yearly_degradation = float(economic_config['yearly_degradation'])
+
+
+passion.economic.lcoe.generate_economic(input_path,
+                                        input_name,
+                                        output_path,
+                                        output_name,
+                                        panel_lifespan,
+                                        inverter_lifespan,
+                                        inverter_price_rate,
+                                        other_costs,
+                                        discount_rate,
+                                        yearly_degradation)

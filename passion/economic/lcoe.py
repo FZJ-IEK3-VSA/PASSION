@@ -3,17 +3,6 @@ import xarray
 
 import passion.util
 
-# Parameters to take into consideration during the LCOE calculation.
-# Any of the properties can be overwritten.
-DEFAULT_LCOE_PARAMS = {
-  'panel_lifespan': 25,
-  'inverter_lifespan': 13,
-  'inverter_price_rate': 0.2,
-  'other_costs': 200,
-  'discount_rate': 0.05,
-  'yearly_degradation': 0.005
-}
-
 def generate_economic(input_path: pathlib.Path,
                       input_filename: str,
                       output_path: pathlib.Path,
@@ -72,7 +61,7 @@ def calculate_lcoe(generation: float, capacity: float, modules_cost: float, lcoe
   and installation properties.
 
   The formula takes into account the yearly costs and benefits, degradation factor
-  and discount rate. Parameters can be changed in the dictionary DEFAULT_LCOE_PARAMS.
+  and discount rate.
 
   Returns the average price per Mega-Watt hour during the system lifespan.
   '''

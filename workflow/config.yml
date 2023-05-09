@@ -77,6 +77,12 @@ TechnicalAnalysis:
 EconomicAnalysis:
   output_folder: 'economic'
   file_name: 'lcoe'
+  panel_lifespan: 25
+  inverter_lifespan: 13
+  inverter_price_rate: 0.2
+  other_costs: 200
+  discount_rate: 0.08
+  yearly_degradation: 0.005
 
 SectionSegmentationTraining:
   train_folder: '/storage/internal/home/r-pueblas/projects/rooftop-segmentation-datasets/data/RID/output/masks_segments_reviewed/train'
