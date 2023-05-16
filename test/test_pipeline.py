@@ -9,7 +9,9 @@ import stat
 import passion
 
 TEMP_FILE_PATH = pathlib.Path(os.path.dirname(os.path.realpath(__file__))) / "tmp"
-
+ROOFTOP_MODEL_URL = 'https://zenodo.org/record/7886980/files/rooftops.pth?download=1'
+SECTION_MODEL_URL = 'https://zenodo.org/record/7886980/files/sections.pth?download=1'
+SUPERST_MODEL_URL = 'https://zenodo.org/record/7886980/files/superstructures.pth?download=1'
 
 def test_image_retrieval():
   '''Tests the image retrieval from Bing Maps.'''
@@ -38,6 +40,14 @@ def test_get_segmentation_prediction():
   superstructures_output_path = output_path / 'superstructures'
 
   device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+  if not model_path.exists():
+    print(f'Rooftop segmentation model was not found. Downloading it from {ROOFTOP_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
+    with requests.get(ROOFTOP_MODEL_URL, stream=True) as r:
+        with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
+            with open(f"{str(model_path)}", 'wb')as output:
+                shutil.copyfileobj(raw, output)
+
   model = torch.load(str(model_path), map_location=torch.device(device))
 
   passion.segmentation.prediction.segment_dataset(
@@ -48,6 +58,14 @@ def test_get_segmentation_prediction():
         )
   
   model_path = TEMP_FILE_PATH / '../../workflow/output/model/section-segmentation/sections.pth'
+
+  if not model_path.exists():
+      print(f'Section segmentation model was not found. Downloading it from {SECTION_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
+      with requests.get(SECTION_MODEL_URL, stream=True) as r:
+          with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
+              with open(f"{str(model_path)}", 'wb')as output:
+                  shutil.copyfileobj(raw, output)
+
   model = torch.load(str(model_path), map_location=torch.device(device))
 
   passion.segmentation.prediction.segment_dataset(
@@ -58,6 +76,14 @@ def test_get_segmentation_prediction():
         )
   
   model_path = TEMP_FILE_PATH / '../../workflow/output/model/superst-segmentation/superstructures.pth'
+
+  if not model_path.exists():
+      print(f'Superstructure segmentation model was not found. Downloading it from {SUPERST_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
+      with requests.get(SUPERST_MODEL_URL, stream=True) as r:
+          with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
+              with open(f"{str(model_path)}", 'wb')as output:
+                  shutil.copyfileobj(raw, output)
+
   model = torch.load(str(model_path), map_location=torch.device(device))
 
   passion.segmentation.prediction.segment_dataset(
