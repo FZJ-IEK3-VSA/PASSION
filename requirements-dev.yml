@@ -1,4 +1,4 @@
-name: passion-dev
+name: passion-datadesc
 channels:
   - conda-forge
   - defaults
