@@ -5,6 +5,9 @@ import torch
 import shutil
 import xarray
 import stat
+import requests
+from tqdm.auto import tqdm
+import shutil
 
 import passion
 
@@ -44,9 +47,9 @@ def test_get_segmentation_prediction():
   if not model_path.exists():
     print(f'Rooftop segmentation model was not found. Downloading it from {ROOFTOP_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
     with requests.get(ROOFTOP_MODEL_URL, stream=True) as r:
-        with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
-            with open(f"{str(model_path)}", 'wb')as output:
-                shutil.copyfileobj(raw, output)
+      with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
+        with open(f"{str(model_path)}", 'wb')as output:
+          shutil.copyfileobj(raw, output)
 
   model = torch.load(str(model_path), map_location=torch.device(device))
 
@@ -60,11 +63,11 @@ def test_get_segmentation_prediction():
   model_path = TEMP_FILE_PATH / '../../workflow/output/model/section-segmentation/sections.pth'
 
   if not model_path.exists():
-      print(f'Section segmentation model was not found. Downloading it from {SECTION_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
-      with requests.get(SECTION_MODEL_URL, stream=True) as r:
-          with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
-              with open(f"{str(model_path)}", 'wb')as output:
-                  shutil.copyfileobj(raw, output)
+    print(f'Section segmentation model was not found. Downloading it from {SECTION_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
+    with requests.get(SECTION_MODEL_URL, stream=True) as r:
+      with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
+        with open(f"{str(model_path)}", 'wb')as output:
+          shutil.copyfileobj(raw, output)
 
   model = torch.load(str(model_path), map_location=torch.device(device))
 
@@ -78,11 +81,11 @@ def test_get_segmentation_prediction():
   model_path = TEMP_FILE_PATH / '../../workflow/output/model/superst-segmentation/superstructures.pth'
 
   if not model_path.exists():
-      print(f'Superstructure segmentation model was not found. Downloading it from {SUPERST_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
-      with requests.get(SUPERST_MODEL_URL, stream=True) as r:
-          with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
-              with open(f"{str(model_path)}", 'wb')as output:
-                  shutil.copyfileobj(raw, output)
+    print(f'Superstructure segmentation model was not found. Downloading it from {SUPERST_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
+    with requests.get(SUPERST_MODEL_URL, stream=True) as r:
+      with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
+        with open(f"{str(model_path)}", 'wb')as output:
+          shutil.copyfileobj(raw, output)
 
   model = torch.load(str(model_path), map_location=torch.device(device))
 
