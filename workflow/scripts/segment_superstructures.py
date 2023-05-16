@@ -10,7 +10,7 @@ parser.add_argument('--config', metavar='C', type=str, help='Config file path')
 args = vars(parser.parse_args())
 configfile = args['config']
 
-ROOFTOP_MODEL_URL = 'https://zenodo.org/record/7886980/files/superstructures.pth?download=1'
+SUPERST_MODEL_URL = 'https://zenodo.org/record/7886980/files/superstructures.pth?download=1'
 
 with open(configfile, "r") as stream:
     try:
@@ -45,8 +45,8 @@ model_rel_path = segmentation_config['model_rel_path']
 model_path = results_path / model_rel_path
 
 if not model_path.exists():
-    print(f'Rooftop segmentation model was not found. Downloading it from {ROOFTOP_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
-    with requests.get(ROOFTOP_MODEL_URL, stream=True) as r:
+    print(f'Rooftop segmentation model was not found. Downloading it from {SUPERST_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
+    with requests.get(SUPERST_MODEL_URL, stream=True) as r:
         with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
             with open(f"{str(model_path)}", 'wb')as output:
                 shutil.copyfileobj(raw, output)

@@ -1,6 +1,6 @@
 
 results_path: workflow/output
-project_name: test
+project_name: sample
 
 ImageRetrieval:
   api_key: ''
