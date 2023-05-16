@@ -2,7 +2,6 @@ import pathlib
 import numpy as np
 import tqdm
 import shapely.geometry
-import rasterio
 
 import passion.util
 
@@ -32,11 +31,10 @@ def generate_osm(input_path: pathlib.Path,
   paths = list(input_path.glob('*.tif'))
   pbar = tqdm.tqdm(paths)
   for img_path in pbar:
-    src = rasterio.open(img_path)
-    r = src.read(1)
-    g = src.read(2)
-    b = src.read(3)
-    image = np.dstack((b,g,r))
+    src = passion.util.io.read_geotiff(img_path)
+    image = src.ReadAsArray()
+    # Change channels first to channels last
+    image = np.moveaxis(image, 0, -1)
 
     zoom = int(src.tags().get('zoom_level'))
     img_center_x, img_center_y = src.xy(src.height // 2, src.width // 2)
@@ -50,14 +48,15 @@ def generate_osm(input_path: pathlib.Path,
 
     seg_image = seg_image[np.newaxis, ...]
     channels, height, width = seg_image.shape
-    new_dataset = rasterio.open(str(output_path / (img_path.stem + '_MASK.tif')), 'w', driver='GTiff',
-                                        height = height, width = width,
-                                        count=1, dtype=str(seg_image.dtype),
-                                        crs=src.crs,
-                                        transform=src.transform)
-    new_dataset.update_tags(**src.tags())
-    new_dataset.write(seg_image)
-    new_dataset.close()
+
+    # Change channels first to channels last
+    seg_image = np.moveaxis(seg_image, 0, -1)
+    metadata = {'zoom_level': zoom}
+    passion.util.io.write_geotiff(str(output_path / (img_path.stem + '_MASK.tif')),
+                                  seg_image,
+                                  src.GetGeoTransform(),
+                                  src.GetProjection(),
+                                  metadata)
 
   return
 

@@ -1,4 +1,4 @@
-name: passion-test
+name: passion-dev
 channels:
   - conda-forge
   - defaults

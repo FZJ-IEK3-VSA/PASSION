@@ -4,10 +4,12 @@ import pathlib
 import torch
 import shutil
 import xarray
+import stat
 
 import passion
 
 TEMP_FILE_PATH = pathlib.Path(os.path.dirname(os.path.realpath(__file__))) / "tmp"
+
 
 def test_image_retrieval():
   '''Tests the image retrieval from Bing Maps.'''
@@ -42,7 +44,7 @@ def test_get_segmentation_prediction():
         input_path = input_path,
         model = model,
         output_path = rooftops_output_path,
-        background_class = 17
+        background_class = 0
         )
   
   model_path = TEMP_FILE_PATH / '../../workflow/output/model/section-segmentation/sections.pth'
@@ -88,4 +90,6 @@ def test_get_rooftops():
 
   ds = xarray.open_dataset(str(output_path / (output_filename + '.nc')))
   
+  #os.chmod(TEMP_FILE_PATH, stat.S_IWUSR)
+  os.chdir('/')
   shutil.rmtree(TEMP_FILE_PATH)

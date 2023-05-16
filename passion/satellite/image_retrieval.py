@@ -9,7 +9,6 @@ import math
 import traceback
 import pkg_resources
 import mahotas.polygon
-import rasterio
 
 import passion.util
 
@@ -135,30 +134,20 @@ def generate_dataset(
               img = filter_image_shapefile(img, shapefile_pixels_relative)
             
             filename = passion.util.gis.get_filename((current_lat, current_lon), zoom)
-            #save_img(img, output_path, filename)
 
             tif_name = filename.replace('.png', '.tif')
             img_np = np.asarray(img)
             height, width, channels = img_np.shape
-            img_rgb = np.moveaxis(img_np, -1, 0)
             west, north, east, south = (current_x - (width//2), current_y + (height//2) - (watermark//2), current_x + (width//2), current_y - (height//2) - (watermark//2))
-            transform = rasterio.transform.from_bounds(west=west,
-                                                       south=south,
-                                                       east=east,
-                                                       north=north,
-                                                       width=width,
-                                                       height=height)
-            # https://epsg.io/3857
-            crs = rasterio.CRS.from_epsg(3857)
-
-            new_dataset = rasterio.open(str(output_path / tif_name), 'w', driver='GTiff',
-                                        height = height, width = width,
-                                        count=3, dtype=str(img_rgb.dtype),
-                                        crs=crs,
-                                        transform=transform)
-            new_dataset.update_tags(zoom_level=zoom)
-            new_dataset.write(img_rgb)
-            new_dataset.close()
+            
+            transform = passion.util.gis.get_gdal_transform([west, south, east, north], width, height)
+            projection = passion.util.gis.get_gdal_projection(epsg = 3857)
+            metadata = {'zoom_level': str(zoom)}
+            passion.util.io.write_geotiff(str(output_path / tif_name),
+                                          img_np,
+                                          transform,
+                                          projection,
+                                          metadata)
         
         except Exception as e:
           #TODO: handle specific exceptions
@@ -203,11 +192,6 @@ def filter_image_shapefile(img: PIL.Image, shapefile_pixels_relative: list):
   img = PIL.Image.fromarray(masked)
 
   return img
-
-def save_img(img: PIL.Image, output_path: pathlib.Path, filename):
-  '''Saves a PIL Image into a pathlib Path with a given filename.'''
-  img.save(output_path / filename)
-  return
 
 def retrieve_image(
   api_key: str,
