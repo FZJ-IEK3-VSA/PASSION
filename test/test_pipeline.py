@@ -90,6 +90,4 @@ def test_get_rooftops():
 
   ds = xarray.open_dataset(str(output_path / (output_filename + '.nc')))
   
-  #os.chmod(TEMP_FILE_PATH, stat.S_IWUSR)
-  os.chdir('/')
   shutil.rmtree(TEMP_FILE_PATH)

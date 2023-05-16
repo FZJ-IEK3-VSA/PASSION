@@ -55,25 +55,23 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
     
     rooftop_src = passion.util.io.read_geotiff(rooftop_path)
     rooftop_img = rooftop_src.ReadAsArray()
-    rooftop_img = np.moveaxis(rooftop_img, 0, -1)
+    #rooftop_img = np.moveaxis(rooftop_img, 0, -1)
 
     section_src = passion.util.io.read_geotiff(section_path)
     section_img = section_src.ReadAsArray()
-    section_img = np.moveaxis(section_img, 0, -1)
+    #section_img = np.moveaxis(section_img, 0, -1)
 
     superst_src = passion.util.io.read_geotiff(superst_path)
     superst_img = superst_src.ReadAsArray()
-    superst_img = np.moveaxis(superst_img, 0, -1)
+    #superst_img = np.moveaxis(superst_img, 0, -1)
 
     zoom = int(rooftop_src.GetMetadata().get('zoom_level'))
 
-    xoffset, px_w, rot1, yoffset, px_h, rot2 = rooftop_src.GetGeoTransform()
-    width = rooftop_src.RasterXSize
-    height = rooftop_src.RasterYSize
-    bands = rooftop_src.RasterCount
-
-    img_center_x = int(px_w * (width / 2) + rot1 * (height / 2) + xoffset + (px_w / 2.0))
-    img_center_y = int(rot2 * (width / 2) + px_h * (height / 2) + yoffset + (px_h / 2.0))
+    west, xres, xskew, north, yskew, yres  = rooftop_src.GetGeoTransform()
+    east = west + (rooftop_src.RasterXSize * xres)
+    south = north + (rooftop_src.RasterYSize * yres)
+    img_center_x = (west + east) // 2
+    img_center_y = (south + north) // 2
 
     img_center_lat, img_center_lon = passion.util.gis.xy_tolatlon(img_center_x, img_center_y, zoom)
 

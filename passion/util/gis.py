@@ -210,7 +210,6 @@ def get_gdal_transform(extent: List[int], width: int, height: int):
   ''''''
   resx = (extent[2] - extent[0]) / width
   resy = (extent[3] - extent[1]) / height
-  print(f'Resolution: {resx},{resy}')
 
   return [extent[0], resx, 0, extent[3] , 0, -resy]
 

@@ -59,8 +59,6 @@ def load_pickle(path: pathlib.Path):
 def write_geotiff(filename: str, img: np.array, transform: List[float], projection: str, metadata: Dict[str, str]):
   '''Writes a GeoTiff image from a numpy array in shape format (height, width, channels).'''
   # https://epsg.io/3857
-
-  print(type(projection))
   
   height, width, channels = img.shape
 
@@ -75,7 +73,6 @@ def write_geotiff(filename: str, img: np.array, transform: List[float], projecti
   # Write each band
   for i, arr in enumerate(range(channels)):
     arr = img[..., i]
-    #print(f'Index {i} shape {arr.shape}')
     band = out_ds.GetRasterBand(i + 1)
     band.WriteArray(arr)
     band.FlushCache()

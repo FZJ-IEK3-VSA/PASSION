@@ -1,5 +1,7 @@
 import passion
 import argparse, pathlib, yaml, pathlib, shapefile
+import pkg_resources
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', metavar='C', type=str, help='Config file path')
@@ -30,7 +32,21 @@ output_path = project_results_path / output_folder
 output_name = technical_config['file_name']
 
 merra_path = technical_config.get('merra_path')
+merra_path = results_path / merra_path
+if list(merra_path.glob('.nc')) == []:
+    reskit_merra_path = pkg_resources.resource_filename('reskit', '_test/data/merra-like')
+    print(f'Merra path specified in config.yml does not exist. Copying default merra-like data from RESKit ({reskit_merra_path}).')
+    reskit_merra_path = pathlib.Path(reskit_merra_path)
+    merra_path.mkdir(parents=True, exist_ok=True)
+    for f in reskit_merra_path.glob('*.nc4'):
+        shutil.copy(f, merra_path)
+    
 solar_atlas_path = technical_config.get('solar_atlas_path')
+solar_atlas_path = results_path / solar_atlas_path
+if not solar_atlas_path.exists():
+    reskit_solar_atlas_path = pkg_resources.resource_filename('reskit', '_test/data/gsa-ghi-like.tif')
+    print(f'Solar atlas path specified in config.yml does not exist. Copying default solar atlas data from RESKit ({reskit_solar_atlas_path}).')
+    shutil.copy(reskit_solar_atlas_path, solar_atlas_path)
 
 minimum_section_area = float(technical_config.get('minimum_section_area'))
 
