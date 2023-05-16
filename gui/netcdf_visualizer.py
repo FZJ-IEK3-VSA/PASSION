@@ -5,7 +5,6 @@ import shapely
 import shapely.wkt
 import pathlib
 import folium
-import rasterio
 import xarray
 import numpy as np
 import pandas as pd
@@ -19,7 +18,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    region = flask.request.args.get('region', default = 'skopje', type = str)
+    region = flask.request.args.get('region', default = 'sample', type = str)
     zoom = flask.request.args.get('zoom', default = 19, type = int)
     n_samples = flask.request.args.get('n_samples', default = 99999999, type = int)
     show_raster = flask.request.args.get('show_raster')
@@ -32,9 +31,15 @@ def index():
     panel_opacity = 0.95
 
     sample_satellite = list((results_path / 'satellite').glob('*.tif'))[0]
-    sample_src = rasterio.open(sample_satellite)
-    zoom_level = int(sample_src.tags().get('zoom_level'))
-    west, east, south, north = sample_src.bounds.left, sample_src.bounds.right, sample_src.bounds.bottom, sample_src.bounds.top
+    sample_src = passion.util.io.read_geotiff(sample_satellite)
+
+    zoom_level = int(sample_src.GetMetadata().get('zoom_level'))
+
+
+    west, xres, xskew, north, yskew, yres  = sample_src.GetGeoTransform()
+    east = west + (sample_src.RasterXSize * xres)
+    south = north + (sample_src.RasterYSize * yres)
+
     start_coords = passion.util.gis.xy_tolatlon(((west + east) // 2), ((south + north) // 2), zoom_level)
     folium_map = folium.Map(location=start_coords, zoom_start=15, max_zoom=20)
 
@@ -194,15 +199,16 @@ def index():
 def geotiff_folder_to_featuregroup(name: str, path: pathlib.Path, num_channels: int, opacity: float):
     layer_predictions = folium.FeatureGroup(name=name, control=True, show=False, overlay=True)
     for f in (path).glob('*.tif'):
-        src = rasterio.open(f)
-        zoom_level = int(src.tags().get('zoom_level'))
-        c_list = []
-        for channel in range(num_channels):
-            c = src.read(channel + 1)
-            c_list.append(c)
-        img = np.dstack(c_list)
+        src = passion.util.io.read_geotiff(f)
+        img = src.ReadAsArray()
+        if len(img.shape) == 3: img = np.moveaxis(img, 0, -1)
 
-        west, east, south, north = src.bounds.left, src.bounds.right, src.bounds.bottom, src.bounds.top
+        zoom_level = int(src.GetMetadata().get('zoom_level'))
+        
+        west, xres, xskew, north, yskew, yres  = src.GetGeoTransform()
+        east = west + (src.RasterXSize * xres)
+        south = north + (src.RasterYSize * yres)
+
         lat1, lon1 = passion.util.gis.xy_tolatlon(west, north, zoom_level)
         lat2, lon2 = passion.util.gis.xy_tolatlon(east, south, zoom_level)
         folium_img = folium.raster_layers.ImageOverlay(

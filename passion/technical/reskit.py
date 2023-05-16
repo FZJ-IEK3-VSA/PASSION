@@ -234,8 +234,8 @@ def generate_technical(input_path: pathlib.Path,
     ]
     print(f'Simulating sections...')
     technical_ds = rk.solar.openfield_pv_merra_ryberg2019(sections_df,
-                                                          merra_path,
-                                                          solar_atlas_path,
+                                                          str(merra_path),
+                                                          str(solar_atlas_path),
                                                           module=pv_model_id,
                                                           output_variables=output_variables
                                                           )
@@ -250,8 +250,8 @@ def generate_technical(input_path: pathlib.Path,
     ]
     print(f'Simulating existing panels...')
     panels_ds = rk.solar.openfield_pv_merra_ryberg2019(panels_df,
-                                                        merra_path,
-                                                        solar_atlas_path,
+                                                        str(merra_path),
+                                                        str(solar_atlas_path),
                                                         module=pv_model_id,
                                                         output_variables=output_variables
                                                         )

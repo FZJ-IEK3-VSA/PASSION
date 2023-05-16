@@ -4,6 +4,8 @@ import urllib.request
 from functools import singledispatch
 import shapefile
 import shapely
+from typing import List
+from osgeo import osr
 
 '''
 Bing Maps conversion helper functions as specified in:
@@ -203,3 +205,17 @@ def polygons_intersect(polygon1, polygon2):
 def substract_offset(polygon, offset_x, offset_y):
   '''Returns the polygon expressed as a list after substracting the given offset'''
   return [(coord[0]-offset_x, coord[1]-offset_y) for coord in polygon]
+
+def get_gdal_transform(extent: List[int], width: int, height: int):
+  ''''''
+  resx = (extent[2] - extent[0]) / width
+  resy = (extent[3] - extent[1]) / height
+
+  return [extent[0], resx, 0, extent[3] , 0, -resy]
+
+def get_gdal_projection(epsg: int):
+  ''''''
+  projection = osr.SpatialReference()
+  projection.ImportFromEPSG(epsg)
+
+  return projection.ExportToWkt()

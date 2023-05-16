@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 import tqdm
 import shapely
-import rasterio
 import xarray
 
 import passion.util
@@ -53,17 +52,29 @@ def analyze_rooftops(rooftop_predictions_path: pathlib.Path,
     rooftop_extension = rooftop_path.suffix
 
     # Load all three segmented images
-    rooftop_src = rasterio.open(rooftop_path)
-    rooftop_img = rooftop_src.read(1)
-    section_src = rasterio.open(section_path)
-    section_img = section_src.read(1)
-    superst_src = rasterio.open(superst_path)
-    superst_img = superst_src.read(1)
-  
-    zoom = int(rooftop_src.tags().get('zoom_level'))
-    img_center_x, img_center_y = section_src.xy(section_src.height // 2, section_src.width // 2)
+    
+    rooftop_src = passion.util.io.read_geotiff(rooftop_path)
+    rooftop_img = rooftop_src.ReadAsArray()
+    #rooftop_img = np.moveaxis(rooftop_img, 0, -1)
+
+    section_src = passion.util.io.read_geotiff(section_path)
+    section_img = section_src.ReadAsArray()
+    #section_img = np.moveaxis(section_img, 0, -1)
+
+    superst_src = passion.util.io.read_geotiff(superst_path)
+    superst_img = superst_src.ReadAsArray()
+    #superst_img = np.moveaxis(superst_img, 0, -1)
+
+    zoom = int(rooftop_src.GetMetadata().get('zoom_level'))
+
+    west, xres, xskew, north, yskew, yres  = rooftop_src.GetGeoTransform()
+    east = west + (rooftop_src.RasterXSize * xres)
+    south = north + (rooftop_src.RasterYSize * yres)
+    img_center_x = (west + east) // 2
+    img_center_y = (south + north) // 2
+
     img_center_lat, img_center_lon = passion.util.gis.xy_tolatlon(img_center_x, img_center_y, zoom)
-  
+
     # Extract all of the polygons
     rooftop_classes, rooftops = passion.util.shapes.get_image_classes_xy(rooftop_img, simplification_distance)
     section_classes, sections = passion.util.shapes.get_image_classes_xy(section_img, simplification_distance)

@@ -1,6 +1,6 @@
 
 results_path: workflow/output
-project_name: dresde-test-model-prioritize
+project_name: test
 
 ImageRetrieval:
   api_key: ''
@@ -59,10 +59,10 @@ RooftopAnalysis:
 TechnicalAnalysis:
   output_folder: 'technical'
   file_name: 'technical'
-  #merra_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/merra-like'
-  merra_path: '/storage/internal/data/tsa/data/weather/merra2/europe/2016/'
-  #solar_atlas_path: '/storage/internal/home/r-pueblas/projects/other/RESKit/reskit/_test/data/gsa-ghi-like.tif'
-  solar_atlas_path: '/storage/internal/data/tsa/data/geography/world_bank_group/global_solar_atlas/World_GHI_GISdata_LTAy_DailySum_GlobalSolarAtlas_GEOTIFF/GHI.tif'
+  #merra_path: '/home/rodrigo/miniconda3/envs/passion-dev/lib/python3.8/site-packages/reskit/_test/data/merra-like'
+  merra_path: 'reskit/merra'
+  #solar_atlas_path: '/home/rodrigo/miniconda3/envs/passion-dev/lib/python3.8/site-packages/reskit/_test/data/gsa-ghi-like.tif'
+  solar_atlas_path: 'reskit/solar_atlas/gsa-ghi-like.tif'
   minimum_section_area: 20
   pv_model_id: 'LG Electronics LG370Q1C-A5' # RESKit identifier
   pv_model_name: 'LG370Q1C-A5'

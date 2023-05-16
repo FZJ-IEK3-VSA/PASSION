@@ -6,6 +6,8 @@ import cv2
 import ast
 import pickle
 import sys
+from osgeo import gdal, gdal_array
+from typing import List, Dict
 
 # Test for allowing cells larger than the initial CSV limit.
 csv.field_size_limit(min(sys.maxsize, 2147483646))
@@ -53,3 +55,30 @@ def load_pickle(path: pathlib.Path):
   with open(path, 'rb') as f:
     obj = pickle.load(f)
   return obj
+
+def write_geotiff(filename: str, img: np.array, transform: List[float], projection: str, metadata: Dict[str, str]):
+  '''Writes a GeoTiff image from a numpy array in shape format (height, width, channels).'''
+  # https://epsg.io/3857
+  
+  height, width, channels = img.shape
+
+  driver = gdal.GetDriverByName('GTiff')
+  out_ds = driver.Create(filename, width, height, channels, gdal.GDT_Byte)
+
+  out_ds.SetProjection(projection)
+  out_ds.SetGeoTransform(transform)
+
+  out_ds.SetMetadata(metadata)
+  
+  # Write each band
+  for i, arr in enumerate(range(channels)):
+    arr = img[..., i]
+    band = out_ds.GetRasterBand(i + 1)
+    band.WriteArray(arr)
+    band.FlushCache()
+
+def read_geotiff(filename: pathlib.Path):
+  '''Reads a GDAL GeoTiff image'''
+  ds = gdal.Open(str(filename))
+
+  return ds

@@ -70,7 +70,7 @@ def calculate_lcoe(generation: float, capacity: float, modules_cost: float, lcoe
 
   maintenance_costs = 0
   total_generation = 0
-  for year in range(0, lcoe_params['panel_lifespan']):
+  for year in range(0, int(lcoe_params['panel_lifespan'])):
     m_costs_y = 0.01 * initial_investment / ((1 + lcoe_params['discount_rate']) ** year)
     maintenance_costs += m_costs_y
 

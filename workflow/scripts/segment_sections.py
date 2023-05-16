@@ -1,11 +1,16 @@
 import passion
 import argparse, pathlib, yaml, pathlib, shapefile
 import torch
+import requests
+from tqdm.auto import tqdm
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--config', metavar='C', type=str, help='Config file path')
 args = vars(parser.parse_args())
 configfile = args['config']
+
+ROOFTOP_MODEL_URL = 'https://zenodo.org/record/7886980/files/sections.pth?download=1'
 
 with open(configfile, "r") as stream:
     try:
@@ -40,6 +45,14 @@ if device=='cuda': print(f'Name: {torch.cuda.get_device_name(0)}')
 
 model_rel_path = segmentation_config['model_rel_path']
 model_path = results_path / model_rel_path
+
+if not model_path.exists():
+    print(f'Rooftop segmentation model was not found. Downloading it from {ROOFTOP_MODEL_URL}. If the file exists, please check the location in the config.yml file.')
+    with requests.get(ROOFTOP_MODEL_URL, stream=True) as r:
+        with tqdm.wrapattr(r.raw, "read", total=int(r.headers.get("Content-Length")), desc="")as raw:
+            with open(f"{str(model_path)}", 'wb')as output:
+                shutil.copyfileobj(raw, output)
+
 model = torch.load(str(model_path), map_location=torch.device(device))
 
 passion.segmentation.prediction.segment_dataset(

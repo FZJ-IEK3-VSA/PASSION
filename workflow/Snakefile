@@ -83,8 +83,9 @@ def aggregate_input(wildcards):
 
 checkpoint segment_rooftops:
     input:
-        aggregate_input,
-        results + '/' + rooftop_segmentation_model_output
+        aggregate_input
+        # Commented out so that the model can be downloaded directly for regular users
+        #results + '/' + rooftop_segmentation_model_output
     output:
         directory(project_results + "/" + rooftop_segmentation_output)
     conda:
@@ -96,8 +97,9 @@ checkpoint segment_rooftops:
 
 checkpoint segment_sections:
     input:
-        aggregate_input,
-        results + '/' + section_segmentation_model_output
+        aggregate_input
+        # Commented out so that the model can be downloaded directly for regular users
+        #results + '/' + section_segmentation_model_output
     output:
         directory(project_results + "/" + section_segmentation_output)
     conda:
@@ -109,8 +111,9 @@ checkpoint segment_sections:
 
 checkpoint segment_superstructures:
     input:
-        aggregate_input,
-        results + '/' + superstructure_segmentation_model_output
+        aggregate_input
+        # Commented out so that the model can be downloaded directly for regular users
+        #results + '/' + superstructure_segmentation_model_output
     output:
         directory(project_results + "/" + superstructure_segmentation_output)
     conda:
