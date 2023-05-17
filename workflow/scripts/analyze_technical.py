@@ -25,6 +25,8 @@ project_results_path = results_path / (f"{config.get('project_name')}-z{zoom}")
 input_folder = rooftop_config['output_folder']
 input_path = project_results_path / input_folder
 input_name = rooftop_config['file_name']
+if not input_filename.endswith('.nc'):
+    input_filename += '.nc'
 
 output_folder = technical_config['output_folder']
 output_path = project_results_path / output_folder
@@ -72,8 +74,7 @@ pv_panel_properties = {
     'n_offset': pv_n_offset
 }
 
-passion.technical.reskit.generate_technical(input_path,
-                                            input_name,
+passion.technical.reskit.generate_technical(input_path / input_name,
                                             output_path,
                                             output_name,
                                             merra_path,

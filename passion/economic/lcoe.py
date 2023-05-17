@@ -4,7 +4,6 @@ import xarray
 import passion.util
 
 def generate_economic(input_path: pathlib.Path,
-                      input_filename: str,
                       output_path: pathlib.Path,
                       output_filename: str,
                       panel_lifespan: int = 25,
@@ -20,8 +19,7 @@ def generate_economic(input_path: pathlib.Path,
 
   ---
   
-  input_path          -- Path, folder in which the technical potential analysis is stored.
-  input_filename      -- str, name for the technical analysis output.
+  input_path          -- Path, path in which the technical potential NetCDF analysis is stored.
   output_path         -- Path, folder in which the economic potential analysis will be stored.
   output_filename     -- str, name for the economic analysis output.
   panel_lifespan      -- int, lifespan of the solar panels.
@@ -33,9 +31,7 @@ def generate_economic(input_path: pathlib.Path,
   '''
   output_path.mkdir(parents=True, exist_ok=True)
 
-  if not input_filename.endswith('.nc'):
-    input_filename += '.nc'
-  with xarray.open_dataset(str(input_path / input_filename)) as technical_ds:
+  with xarray.open_dataset(str(input_path)) as technical_ds:
     print(technical_ds)
     lcoe = calculate_lcoe(technical_ds.section_yearly_system_generation,
                           technical_ds.section_capacity,
