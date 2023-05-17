@@ -1,0 +1,105 @@
+openapi: 3.0.0
+info:
+  title: My Spec
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    calculate_lcoe:
+      type: object
+      description: "Calculates the Levelised Cost of Electricity for a yearly electricity\
+        \ generation\n  \n\n  The formula takes into account the yearly costs and\
+        \ benefits, degradation factor"
+      properties:
+        generation:
+          type: number
+        capacity:
+          type: number
+        modules_cost:
+          type: number
+        lcoe_params:
+          type: object
+          properties:
+            x-type:
+              type: string
+              format: builtins.dict
+          required:
+          - x-type
+      required:
+      - generation
+      - capacity
+      - modules_cost
+      - lcoe_params
+    generate_economic:
+      type: object
+      x-IsInterfaceFunction: true
+      description: "The used metric is the Levelised Cost of Electricity, that divides\
+        \ the overall\n  costs of an energy system during its lifetime by its overall\
+        \ benefits, or\n  \n\n  ---"
+      properties:
+        input_path:
+          type: object
+          x-FileFormat: NetCDF
+          x-NetCDFStructure:
+            Coordinates:
+              location:
+                Dimensions:
+                - location
+                DataType: int64
+                Attributes: {}
+            Variables:
+              section_yearly_system_generation:
+                Dimensions:
+                - location
+                DataType: float64
+                Attributes: {}
+              section_capacity:
+                Coordinates:
+                - location
+                DataType: float64
+                Attributes: {}
+              section_modules_cost:
+                Coordinates:
+                - location
+                DataType: float64
+                Attributes:
+                  Currency: EUR
+          x-VariableRole: input
+          properties:
+            x-type:
+              type: string
+              format: pathlib.Path
+          required:
+          - x-type
+        output_path:
+          type: object
+          properties:
+            x-type:
+              type: string
+              format: pathlib.Path
+          required:
+          - x-type
+        output_filename:
+          type: string
+        panel_lifespan:
+          type: integer
+        inverter_lifespan:
+          type: integer
+        inverter_price_rate:
+          type: number
+        other_costs:
+          type: number
+        discount_rate:
+          type: number
+        yearly_degradation:
+          type: number
+      required:
+      - input_path
+      - output_path
+      - output_filename
+      - panel_lifespan
+      - inverter_lifespan
+      - inverter_price_rate
+      - other_costs
+      - discount_rate
+      - yearly_degradation
