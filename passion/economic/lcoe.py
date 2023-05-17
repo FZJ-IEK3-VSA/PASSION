@@ -3,6 +3,57 @@ import xarray
 
 import passion.util
 
+from typing import List
+from xattrclass.xattr.xattr import xattr
+
+'''
+Necessary:
+- section_yearly_system_generation
+- section_capacity
+- section_modules_cost
+'''
+@xattr(xattr={
+  'generate_economic' : [
+    ('IsInterfaceFunction', True),
+    {
+      'input_path': [
+        ('FileFormat', 'NetCDF'),
+        # Original: 'NetCDFFolders'
+        # This proposal is much closer to the output of a xarray.Dataset.to_dict()
+        ('NetCDFStructure', {
+          'Coordinates': {
+            'location': {
+              'Dimensions': ['location'],
+              'DataType': 'int64',
+              'Attributes': {}
+            }
+          },
+          'Variables': {
+            'section_yearly_system_generation': {
+              'Dimensions': ['location'],
+              'DataType': 'float64',
+              'Attributes': {}
+            },
+            'section_capacity': {
+              'Coordinates': ['location'],
+              'DataType': 'float64',
+              'Attributes': {}
+            },
+            'section_modules_cost': {
+              'Coordinates': ['location'],
+              'DataType': 'float64',
+              'Attributes': {
+                # Sample, non existent in passion
+                'Currency': 'EUR'
+              }
+            }
+          }
+        }),
+        ('VariableRole', 'input')
+      ]
+    }
+  ]
+})
 def generate_economic(input_path: pathlib.Path,
                       output_path: pathlib.Path,
                       output_filename: str,

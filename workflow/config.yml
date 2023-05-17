@@ -58,7 +58,7 @@ RooftopAnalysis:
 
 TechnicalAnalysis:
   output_folder: 'technical'
-  file_name: 'technical'
+  file_name: 'technical-minimal'
   #merra_path: '/home/rodrigo/miniconda3/envs/passion-dev/lib/python3.8/site-packages/reskit/_test/data/merra-like'
   merra_path: 'reskit/merra'
   #solar_atlas_path: '/home/rodrigo/miniconda3/envs/passion-dev/lib/python3.8/site-packages/reskit/_test/data/gsa-ghi-like.tif'
