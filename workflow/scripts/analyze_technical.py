@@ -25,8 +25,8 @@ project_results_path = results_path / (f"{config.get('project_name')}-z{zoom}")
 input_folder = rooftop_config['output_folder']
 input_path = project_results_path / input_folder
 input_name = rooftop_config['file_name']
-if not input_filename.endswith('.nc'):
-    input_filename += '.nc'
+if not input_name.endswith('.nc'):
+    input_name += '.nc'
 
 output_folder = technical_config['output_folder']
 output_path = project_results_path / output_folder
