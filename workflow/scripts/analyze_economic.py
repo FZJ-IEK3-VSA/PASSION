@@ -22,6 +22,8 @@ project_results_path = results_path / (f"{config.get('project_name')}-z{zoom}")
 input_folder = technical_config['output_folder']
 input_path = project_results_path / input_folder
 input_name = technical_config['file_name']
+if not input_filename.endswith('.nc'):
+    input_filename += '.nc'
 
 output_folder = economic_config['output_folder']
 output_path = project_results_path / output_folder
@@ -36,8 +38,7 @@ discount_rate = float(economic_config['discount_rate'])
 yearly_degradation = float(economic_config['yearly_degradation'])
 
 
-passion.economic.lcoe.generate_economic(input_path,
-                                        input_name,
+passion.economic.lcoe.generate_economic(input_path / input_name,
                                         output_path,
                                         output_name,
                                         panel_lifespan,

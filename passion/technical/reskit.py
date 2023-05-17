@@ -8,7 +8,6 @@ import xarray
 import passion.util
 
 def generate_technical(input_path: pathlib.Path,
-                       input_filename: str,
                        output_path: pathlib.Path,
                        output_filename: str,
                        merra_path: pathlib.Path,
@@ -25,8 +24,7 @@ def generate_technical(input_path: pathlib.Path,
 
   ---
   
-  input_path            -- Path, folder in which the sections analysis is stored.
-  input_filename        -- str, name for the sections analysis file.
+  input_path            -- Path, path in which the sections analysis NetCDF is stored.
   output_path           -- Path, folder in which the technical potential analysis will be stored.
   output_filename       -- str, name for the technical analysis output.
   merra_path            -- Path, folder in which the MERRA-2 dataset is stored.
@@ -52,11 +50,8 @@ def generate_technical(input_path: pathlib.Path,
                       #'rooftop_image_name',
                       'n_panels', 'modules_cost'])
 
-  
-  if not input_filename.endswith('.nc'):
-    input_filename += '.nc'
-  with xarray.open_dataset(str(input_path / input_filename)) as sections_ds:
-    print(f'Loaded dataset {input_filename}')
+  with xarray.open_dataset(str(input_path)) as sections_ds:
+    print(f'Loaded dataset {str(input_path)}')
     section_id = sections_ds.section_id.to_dataframe()
     section_wkt_latlon = sections_ds.section_wkt_latlon.to_dataframe()
     section_wkt_xy = sections_ds.section_wkt_xy.to_dataframe()
