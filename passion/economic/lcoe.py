@@ -35,12 +35,12 @@ Necessary:
               'Attributes': {}
             },
             'section_capacity': {
-              'Coordinates': ['location'],
+              'Dimensions': ['location'],
               'DataType': 'float64',
               'Attributes': {}
             },
             'section_modules_cost': {
-              'Coordinates': ['location'],
+              'Dimensions': ['location'],
               'DataType': 'float64',
               'Attributes': {
                 # Sample, non existent in passion
