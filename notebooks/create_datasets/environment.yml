@@ -1,0 +1,15 @@
+name: rsd
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8.13
+  - notebook=6.4.0
+  - pip=22.0.4
+  - pip:
+    - py7zr==0.20.0
+    - pyunpack==0.3
+    - patool==1.12
+    - tqdm==4.64.1
+    - opencv-python==4.6.0.66
+    - gdown==4.5.1
